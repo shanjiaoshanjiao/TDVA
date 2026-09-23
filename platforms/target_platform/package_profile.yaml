@@ -1,0 +1,40 @@
+package_id: target_platform_demo
+platform_id: target_platform
+workspace_root: output/target_platform_manifest_demo
+
+scenario: |
+  原始想定文本，可以暂时留空。
+  后续用于 LLM 语义解析，但暂时不要让 LLM 直接生多 XML。
+
+common:
+  global_id_registry: common/entity_registry.json
+  reference_registry: common/reference_registry.json
+
+documents:
+  - xml_id: units
+    alias: 作战单元
+    template: templates/units.xml
+    input_json: inputs/units.json
+    output:
+      file: units.xml
+    depends_on: []
+
+    defines:
+      - dataaircraft
+
+    references: []
+
+  - xml_id: missions
+    alias: 任务规划
+    template: templates/missions.xml
+    input_json: inputs/missions.json
+    output:
+      file: missions.xml
+    depends_on:
+      - units
+
+    defines:
+      - data-mission
+
+    references:
+      - dataaircraft
