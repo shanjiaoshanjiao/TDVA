@@ -498,25 +498,35 @@ class TDVAXMLGenerator:
             neo4j_auth: tuple, 
             openai_api_key: str, 
             openai_base_url: str, 
+            llm_model: str = "deepseek-ai/DeepSeek-V4-Flash",  
             max_workers: int = 10, 
             entity_id_map_file: str | None = None,
+            prompt_template_path: str ="./prompt/fill_xml_prompt_v4.0.txt",
             chunk_mapping_path: str = "./chunk_mapping.json", 
             entity_map_file: str = "./entity_data_map.json", 
             json_chunk_path: str = "./json_chunks", 
             xml_chunk_path: str = "./xml_chunks", 
             final_xml_path: str = "./final_xml", 
             prompt_path: str = "./prompt", 
-            ex_info_path: str = "./ex_info.txt"
+            ex_info_path: str = "./ex_info.txt",
+            # async_client: AsyncOpenAI | None = None,
+            # llm_semaphore: asyncio.Semaphore | None = None,
             ):
         self.openai_api_key = openai_api_key
         self.openai_base_url = openai_base_url
         self.neo4j_graph = Graph(neo4j_uri, auth=neo4j_auth)
+        self.llm_model = llm_model
         self.matcher = NodeMatcher(self.neo4j_graph)
-        self.async_client = AsyncOpenAI(api_key=self.openai_api_key, base_url = self.openai_base_url, timeout=120)
         self.max_completion_length = 32000
-        self.semaphore = asyncio.Semaphore(max_workers)
+        self.max_workers = max_workers
         self.id_map = {}  # 全局ID映射表: {node_id: filename}
-        # 分块映射表存储路径
+        # 提示词模板储存路径
+        self.prompt_template_path = (
+            Path(prompt_template_path)
+            if prompt_template_path
+            else None
+        ) 
+        # 分块映射表存储路径       
         self.chunk_mapping_path = Path(chunk_mapping_path)
         self.entity_map_file = Path(entity_map_file)
         self.prompt_path = Path(prompt_path)
@@ -530,6 +540,18 @@ class TDVAXMLGenerator:
         self.ex_info_file = Path(ex_info_path)
         # 实体业务ID注册表，与Node ID分开管理。
         self.entity_id_registry = GlobalIdRegistry()
+
+        # 整个生成器实例只创建一个客户端
+        self.async_client: AsyncOpenAI | None = AsyncOpenAI(
+            api_key=self.openai_api_key,
+            base_url=self.openai_base_url,
+            timeout=120,
+        )
+
+        # 所有 chunk 的 LLM 请求共享这个并发限制器
+        self.semaphore = asyncio.Semaphore(
+            self.max_workers
+        )
         
         # 建议作为构造参数传入；没有传入时使用默认路径。
         self.entity_id_map_file = Path(
@@ -543,6 +565,11 @@ class TDVAXMLGenerator:
                 self.entity_id_map_file
             )
 
+
+    async def close(self) -> None:
+        """关闭异步 OpenAI 客户端。"""
+        if self.async_client is not None:
+            await self.async_client.close()
 
     def prepare_workspace(self) -> None:
         """创建本次生成所需的目录。"""
@@ -568,6 +595,7 @@ class TDVAXMLGenerator:
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
 
+
     def create_indexes(self):
         """创建必要的数据库索引"""
         try:
@@ -582,15 +610,17 @@ class TDVAXMLGenerator:
         self, 
         fragments: List[Dict], 
         entity_data_map: Dict[str, List[Dict]]  # 新增：节点类型->List元素字典
-    ) -> Tuple[Dict, Dict]:
+    ) -> Tuple[Dict, Dict, Dict]:
         """
         根据模板片段和 JSON 实例创建：
         - XML chunks
         - JSON chunks
         - chunk mapping
-        """        
-        xml_chunks_dict = dict()
-        chunk_mapping = {}  # 分块映射表（key: node_id_索引）
+        """ 
+        xml_chunks: dict[str, str] = {}
+        json_chunks: dict[str, dict] = {}
+        chunk_mapping: dict[str, dict] = {}     # 分块映射表（key: node_id_索引） 
+
         node_instance_count_map = {}  # 记录每个原始节点生成了几个实例
         # 保证父节点先处理、子节点后处理，避免子节点读取不到父节点实例数
         fragment_map = {
@@ -709,22 +739,16 @@ class TDVAXMLGenerator:
                     parent_json_key = "unknown"
                     full_path_str = fragment.get("node_name", "unknown")
 
-
+                ## 生成XML分块
                 xml_chunk = self.serialize_fragment_as_xml_chunk(fragment, instance_node_id, instance_parent_id, node_type, parent_json_key, full_path_str)
-                xml_filename = f"xml_chunk_{instance_node_id}.xml"
-                
-
-                xml_filepath = os.path.join(self.xml_chunk_path, xml_filename)
-                Path(xml_filepath).write_text(xml_chunk, encoding="utf-8")
-                xml_chunks_dict[instance_node_id] = xml_chunk
-                
+    
                 # 2. 生成JSON分块（绑定锚点与父子关系+填充当前List元素数据）
                 json_chunk = self.generate_json_chunk(fragment, instance_node_id, instance_parent_id, node_type, entity_data)
-                json_filename = f"json_chunk_{instance_node_id}.json"
-                json_filepath = os.path.join(self.json_chunk_path, json_filename)
-                Path(json_filepath).write_text(json.dumps(json_chunk, ensure_ascii=False, indent=2), encoding="utf-8")
+
+                xml_chunks[instance_node_id] = xml_chunk
+                json_chunks[instance_node_id] = json_chunk
                 
-                # 3. 构建分块映射表条目（核心修改：补全缺失的映射表构建逻辑 + 新增上层JSON键记录）
+                # 3. 构建分块映射表条目
                 chunk_mapping[instance_node_id] = {
                     "node_id": instance_node_id,
                     "original_node_id": node_id,  # 记录原始节点ID
@@ -735,25 +759,90 @@ class TDVAXMLGenerator:
                     "json_node_name": full_path_str.split("->")[-1].strip(),
                     "parent_json_key": parent_json_key,  # 【新增】记录原始JSON的上层键
                     "full_json_path": full_path_str,     # 【新增】记录完整的JSON路径
-                    "xml_chunk_path": xml_filepath,
-                    "json_chunk_path": json_filepath,
                     "children_node_ids": [f"node_{child['child_id']}_{idx}" for child in fragment.get("children", [])]
                 }
-        
-
-        
-        # 核心修改：补充分块映射表保存逻辑（原代码被注释导致映射表丢失）
-        Path(self.chunk_mapping_path).write_text(
-            json.dumps(chunk_mapping, ensure_ascii=False, indent=2), 
-            encoding="utf-8"
-        )
-        logger.info(f"分块映射表已保存至: {self.chunk_mapping_path}")
-        
-        # 验证分块对齐性
-        #self.validate_chunk_alignment(chunk_mapping)
-        
-        return xml_chunks_dict, chunk_mapping
+                                
+        return xml_chunks, json_chunks, chunk_mapping
     
+
+
+    def save_chunk_bundle(
+        self,
+        xml_chunks: dict[str, str],
+        json_chunks: dict[str, dict],
+        chunk_mapping: dict[str, dict],
+    ) -> None:
+        """
+        将内存中的 XML/JSON 分块和映射表统一写入磁盘。
+        """
+        self.prepare_workspace()
+
+        for instance_node_id, xml_content in xml_chunks.items():
+            xml_filename = (
+                f"xml_chunk_{instance_node_id}.xml"
+            )
+            xml_filepath = os.path.join(
+                self.xml_chunk_path,
+                xml_filename,
+            )
+
+            Path(xml_filepath).write_text(
+                xml_content,
+                encoding="utf-8",
+            )
+
+            # 将实际文件路径补回 mapping
+            if instance_node_id in chunk_mapping:
+                chunk_mapping[instance_node_id][
+                    "xml_chunk_path"
+                ] = xml_filepath
+
+
+        for instance_node_id, json_content in json_chunks.items():
+            json_filename = (
+                f"json_chunk_{instance_node_id}.json"
+            )
+            json_filepath = os.path.join(
+                self.json_chunk_path,
+                json_filename,
+            )
+
+            Path(json_filepath).write_text(
+                json.dumps(
+                    json_content,
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            if instance_node_id in chunk_mapping:
+                chunk_mapping[instance_node_id][
+                    "json_chunk_path"
+                ] = json_filepath
+
+        Path(self.chunk_mapping_path).write_text(
+            json.dumps(
+                chunk_mapping,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        logger.info(
+            "XML分块已保存: %s 个",
+            len(xml_chunks),
+        )
+        logger.info(
+            "JSON分块已保存: %s 个",
+            len(json_chunks),
+        )
+        logger.info(
+            "分块映射表已保存至: %s",
+            self.chunk_mapping_path,
+        )
+
 
     def _get_node_name_from_path(self, entity_path: str) -> str:
         if not entity_path:
@@ -879,7 +968,6 @@ class TDVAXMLGenerator:
             self._inject_ids_by_full_path(child)
 
 
-
     def _inject_ids_into_entity_data_map(self, entity_data_map):
         """
         根据实体内部的 _full_path_str 注入唯一 ID。
@@ -898,7 +986,6 @@ class TDVAXMLGenerator:
 
 
     # ===================== JSON分块填充List元素数据 =====================
-
     def generate_json_chunk(
         self,
         fragment: Dict,
@@ -939,8 +1026,6 @@ class TDVAXMLGenerator:
         }
         
         return json_chunk
-
-
 
 
 
@@ -1129,9 +1214,27 @@ class TDVAXMLGenerator:
         return [record["node_id"] for record in self.neo4j_graph.run(query).data()]
     
 
-    def _build_llm_prompt(self, fragment: Dict, xml_content: str, json_chunk: Dict) -> str:
-        """重构LLM提示词：仅做字段级填充（保留原有逻辑）"""
-        exclude_keys = {"_position", "_parent_json_key", "_full_path_str"}
+    def _build_llm_prompt(
+            self, 
+            fragment: Dict, 
+            xml_content: str, 
+            json_chunk: Dict
+        ) -> str:
+        """重构LLM提示词：仅做字段级填充"""
+        if self.prompt_template_path is None:
+            raise ValueError("未配置 prompt_template_path")
+
+        if not self.prompt_template_path.exists():
+            raise FileNotFoundError(
+                f"Prompt 模板不存在: {self.prompt_template_path}"
+            )
+        
+        exclude_keys = {
+            "_position", 
+            "_parent_json_key", 
+            "_full_path_str"
+        }
+        
         # 过滤JSON中指定的特殊键，生成新的嵌套字典
         json_content = {
             k: {v_k: v_v for v_k, v_v in v.items() if v_k not in exclude_keys}
@@ -1139,43 +1242,247 @@ class TDVAXMLGenerator:
             else v
             for k, v in json_chunk["data"].items()
         }
-        json_data = json.dumps(json_content, ensure_ascii=False, indent=2)
+        json_data = json.dumps(
+            json_content, 
+            ensure_ascii=False, 
+            indent=2
+        )
 
-        fill_xml_prompt_file = "D:\\非shemi工作内容\陈xz_论文相关\\llm_xiangding_test_code\\prompt\\fill_xml_prompt_v4.0.txt"
-        with open(fill_xml_prompt_file, "r", encoding="utf-8") as f:
-            prompt_template = f.read()
-        
-        user_prompt = prompt_template.format(
+        # 加载提示词模板
+        prompt_template = (
+            self.prompt_template_path
+            .read_text(encoding="utf-8")
+        )
+
+        # 返回参数更新后的提示词
+        return prompt_template.format(
             node_name=fragment["node_name"],
             node_id=fragment["node_id"],
             xml_content=xml_content,
             json_data=json_data
         )
-        return user_prompt
 
 
-    def _parse_xml_from_llm_output(self, llm_output):
+    def _parse_xml_from_llm_output(self, llm_output: str) -> str:
         """
         从LLM的输出文本中解析出XML内容。
         这是一个复杂且需要鲁棒性处理的过程，实际实现可能需要使用正则表达式或尝试多种解析方式。
         此处为简化示例，假设LLM能返回纯净的XML。
         """
-        # 示例：尝试提取可能被标记的JSON代码块
+        # 示例：尝试提取可能被标记的XML代码块
         xml_match = re.search(r'```xml\n(.*?)\n```', llm_output, re.DOTALL)
         if xml_match:
             xml_str = xml_match.group(1)
         else:
-            xml_str = llm_output # 假设整个输出就是JSON
+            xml_str = llm_output # 假设整个输出就是XML
 
-        # 这里应使用json.loads解析json_str，示例直接返回一个模拟字典
-        # 实际使用时请替换为真正的解析逻辑
         return xml_str
 
 
-    # ===================== 核心修改4：适配多实例的片段内容生成 =====================
+    def _load_chunk_inputs(
+        self,
+        instance_node_id: str,
+    ) -> tuple[dict, str, Path, Path]:
+        """
+        读取一个实例对应的 JSON 分块和 XML 分块。
+
+        返回：
+            json_chunk
+            xml_content
+            json_chunk_path
+            xml_chunk_path
+        """
+        json_chunk_path = (
+            self.json_chunk_path
+            / f"json_chunk_{instance_node_id}.json"
+        )
+        xml_chunk_path = (
+            self.xml_chunk_path
+            / f"xml_chunk_{instance_node_id}.xml"
+        )
+
+        if not json_chunk_path.exists():
+            raise FileNotFoundError(
+                f"JSON 分块不存在: {json_chunk_path}"
+            )
+
+        if not xml_chunk_path.exists():
+            raise FileNotFoundError(
+                f"XML 分块不存在: {xml_chunk_path}"
+            )
+
+        json_chunk = json.loads(
+            json_chunk_path.read_text(encoding="utf-8")
+        )
+
+        xml_content = xml_chunk_path.read_text(
+            encoding="utf-8"
+        )
+
+        return (
+            json_chunk,
+            xml_content,
+            json_chunk_path,
+            xml_chunk_path,
+        )
+
+    async def _call_llm_for_chunk(
+        self,
+        prompt: str,
+    ) -> str:
+        messages = [
+            {
+                "role": "system",
+                "content": (
+                    "你是一名军事仿真想定脚本生成专家。"
+                    "请严格确保输出的XML格式正确无误，"
+                    "仅做字段级填充，不修改结构。"
+                ),
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ]
+
+        async with self.semaphore:
+            response = await self.async_client.chat.completions.create(
+                model=self.llm_model,
+                messages=messages,
+                max_tokens=self.max_completion_length,
+                extra_body={"enable_thinking": False},
+                temperature=0.05,
+                top_p=0.1,
+                frequency_penalty=0.1,
+                presence_penalty=0.1,
+            )
+
+        content = response.choices[0].message.content
+
+        if not content:
+            raise ValueError("LLM 返回内容为空")
+
+        return content
+
+    def _parse_and_validate_filled_xml(
+        self,
+        content: str,
+    ) -> tuple[etree._Element, str]:
+        normalized_content = (
+            self._parse_xml_from_llm_output(content)
+        )
+
+        parser = etree.XMLParser(
+            remove_blank_text=True,
+            recover=False,
+        )
+
+        xml_tree = etree.fromstring(
+            normalized_content.encode("utf-8")
+            if isinstance(normalized_content, str)
+            else normalized_content,
+            parser,
+        )
+
+        filled_xml = etree.tostring(
+            xml_tree,
+            encoding="unicode",
+            pretty_print=True,
+        )
+
+        return xml_tree, filled_xml
+
+    def _save_filled_xml(
+        self,
+        xml_chunk_path: Path,
+        filled_xml: str,
+    ) -> None:
+        xml_chunk_path.write_text(
+            filled_xml,
+            encoding="utf-8",
+        )
+
+    def _save_prompt_answer(
+        self,
+        instance_node_id: str,
+        prompt: str,
+        answer: str,
+    ) -> Path:
+        output_path = (
+            self.prompt_path
+            / f"prompt_ans_{instance_node_id}.txt"
+        )
+
+        output_path.write_text(
+            f"PROMPT:\n{prompt}\n\n"
+            f"ANSWER:\n{answer}\n",
+            encoding="utf-8",
+        )
+
+        return output_path
+
+    def _parse_instance_node_id(
+        self,
+        instance_node_id: str,  # 带索引的实例ID（如node_100_0）
+    ) -> tuple[int, int]:
+        """ 解析实例ID（分离原始节点ID和List索引）"""
+        id_parts = instance_node_id.split("_")
+        original_node_id = int(id_parts[1]) if len(id_parts)>=2 else 0
+        list_index = int(id_parts[2]) if len(id_parts)>=3 else 0
+        return original_node_id, list_index
+
+    def _validate_template_xml(self, xml_content: str) -> str:
+        """解析并验证XML"""
+        parser = etree.XMLParser(remove_blank_text=True)
+        xml_tree = etree.fromstring(xml_content, parser)
+        return etree.tostring(xml_tree, encoding="unicode", pretty_print=True)
+
+    def _save_filled_xml(
+                self,
+                xml_path:str,
+                xml_string:str,
+            ) -> None:
+        """"保存XML分块"""
+        Path(xml_path).write_text(xml_string, encoding="utf-8")
+
+
+    def _build_success_result(
+            self,
+            instance_node_id: str,
+            original_node_id: int,
+            list_index: int,
+            filled_xml: str,
+            xml_chunk_path: str,
+            json_chunk_path: str,
+    ) -> Dict:
+        return {
+                "instance_node_id": instance_node_id,
+                "original_node_id": original_node_id,
+                "list_index": list_index,
+                "content": filled_xml,
+                "status": "success",
+                "xml_chunk_path": xml_chunk_path,
+                "json_chunk_path": json_chunk_path
+                }
+
+    def _build_failed_result(
+        self,
+        instance_node_id: str,
+        original_node_id: int,
+        list_index: int,
+        error_message: str,
+    ) -> Dict:
+        return {
+                "instance_node_id": instance_node_id,
+                "original_node_id": original_node_id,
+                "list_index": list_index,
+                "status": "failed",
+                "error": error_message,
+                }
+
+    # ===================== 适配多实例的片段内容生成 =====================
     async def generate_fragment_content(
         self, 
-        session: aiohttp.ClientSession, 
         instance_node_id: str,  # 带索引的实例ID（如node_100_0）
         fragment: Dict,  # 原始片段
         max_retries: int = 3
@@ -1183,159 +1490,125 @@ class TDVAXMLGenerator:
         """生成单个实例的片段内容（适配List元素）"""        
         try:
             # 解析实例ID（分离原始节点ID和List索引）
-            id_parts = instance_node_id.split("_")
-            original_node_id = int(id_parts[1]) if len(id_parts)>=2 else 0
-            list_index = int(id_parts[2]) if len(id_parts)>=3 else 0
-            
-            # 加载对应JSON分块（已预填充List元素数据）
-            json_chunk_path = os.path.join(self.json_chunk_path, f"json_chunk_{instance_node_id}.json")
-            if not os.path.exists(json_chunk_path):
-                raise FileNotFoundError(f"JSON分块文件不存在: {json_chunk_path}")
-            
-            with open(json_chunk_path, "r", encoding="utf-8") as f:
-                json_chunk = json.load(f)
-            
-            # 加载XML分块模板
-            xml_chunk_path = os.path.join(self.xml_chunk_path, f"xml_chunk_{instance_node_id}.xml")
-            if not os.path.exists(xml_chunk_path):
-                raise FileNotFoundError(f"XML分块文件不存在: {xml_chunk_path}")
-            
-            with open(xml_chunk_path, "r", encoding="utf-8") as f:
-                xml_content = f.read()
-            
-            ## 测试.跳过没有子节点的节点
-
-            if len(xml_content.split("\n")) > 3:
-                # 构建LLM提示词
-                current_prompt = self._build_llm_prompt({
-                    "node_id": instance_node_id,
-                    "node_name": fragment["node_name"]
-                }, xml_content, json_chunk)
-                last_error_message = None
-
-                # 初始化异步客户端
-                if not hasattr(self, 'async_client') or self.async_client is None:
-                    self.async_client = AsyncOpenAI(
-                        api_key=self.openai_api_key,
-                        base_url=self.openai_base_url,
-                        timeout=120
+            original_node_id, list_index = (
+                        self._parse_instance_node_id(
+                            instance_node_id
+                        )
                     )
-                
-                for attempt in range(max_retries):
-                    try:    
-                        async with self.semaphore:
-                            # 构建提示词（增强格式校验）
-                            messages = [
-                                {"role":"system", "content":"你是一名军事仿真想定脚本生成专家。请严格确保输出的XML格式正确无误，仅做字段级填充，不修改结构。"},
-                                {"role": "user", "content": current_prompt}
-                            ]
-                        
-                            # 核心修改：注释LLM调用，直接返回原XML（测试用）
-                            response = await self.async_client.chat.completions.create(
-                                    #model = "Qwen/Qwen3.6-35B-A3B",
-                                    model="deepseek-ai/DeepSeek-V4-Flash",
-                                    #model = "gpt-5.5",
-                                    #model="gemini-3.1-pro-preview",
-                                    #model = "deepseek-v3.1",
-                                    #model="deepseek-v4-flash",
-                                    messages = messages,
-                                    max_tokens = self.max_completion_length,
-                                    extra_body={"enable_thinking": False},
-                                    temperature = 0.05,
-                                    top_p = 0.1,
-                                    frequency_penalty = 0.1,
-                                    presence_penalty = 0.1,
-                                    #timeout=600000,
-                            )
-                            content = response.choices[0].message.content
-                            #content = xml_content
-                            #print(content)
-                            # 保存LLM输入输出
-                            prompt_file = os.path.join(self.prompt_path, f"prompt_ans_{instance_node_id}.txt")
-                            with open(prompt_file, "w", encoding="utf-8") as pr_out:
-                                print("PROMPT:", file=pr_out)
-                                print(current_prompt, file=pr_out)
-                                print("ANSWER:", file=pr_out)
-                                print(content, file=pr_out)
-                        
-                        # 解析并验证XML
-                        parser = etree.XMLParser(remove_blank_text=True, recover=True)
-                        content = self._parse_xml_from_llm_output(content)
-                        xml_tree = etree.fromstring(content, parser)
-                        # print(content)
-                        # print(xml_tree)
-                        
-                        # 保存填充后的XML分块
-                        filled_xml = etree.tostring(xml_tree, encoding="unicode", pretty_print=True)
-                        Path(xml_chunk_path).write_text(filled_xml, encoding="utf-8")
-                        
-                        result = {
-                            "instance_node_id": instance_node_id,
-                            "original_node_id": original_node_id,
-                            "list_index": list_index,
-                            "content": filled_xml,
-                            "status": "success",
-                            "xml_chunk_path": xml_chunk_path,
-                            "json_chunk_path": json_chunk_path
-                        }
-                        logger.info(f"实例 {instance_node_id} 生成成功")
-                        return result
-                            
-                    # 【修改7】补充异常捕获：包含XML解析错误和权限错误
-                    except (APIConnectionError, APIError, etree.XMLSyntaxError, PermissionError) as e:
-                        last_error_message = f"执行错误: {getattr(e, 'status_code', '未知')} - {e}"
-                        logger.warning(f"实例 {instance_node_id} 第 {attempt + 1} 次尝试失败: {last_error_message}")
-                    except Exception as e:
-                        last_error_message = str(e)
-                        logger.warning(f"实例 {instance_node_id} 第 {attempt + 1} 次尝试失败: {e}")
-                    
+            
+            # 加载对应JSON和XML分块（已预填充List元素数据）
+            (
+                json_chunk,
+                xml_content,
+                json_chunk_path,
+                xml_chunk_path,
+            ) = self._load_chunk_inputs(
+                instance_node_id
+            )
+            
+            # 没有实际字段需要 LLM 填充时，直接使用模板
+            if len(xml_content.splitlines()) <= 3:
+                logger.info(f"实例 {instance_node_id} 直接使用模板默认值")
+                # 验证XML格式并保存
+                filled_xml = self._validate_template_xml(
+                    xml_content
+                )
+                self._save_filled_xml(
+                    xml_chunk_path,
+                    filled_xml,
+                )
+    
+                return self._build_success_result(
+                    instance_node_id=instance_node_id,
+                    original_node_id=original_node_id,
+                    list_index=list_index,
+                    filled_xml=filled_xml,
+                    xml_chunk_path=xml_chunk_path,
+                    json_chunk_path=json_chunk_path,
+                )
+
+            # 构建LLM提示词
+            current_prompt = self._build_llm_prompt(
+                fragment={
+                "node_id": instance_node_id,
+                "node_name": fragment["node_name"]
+                },
+                xml_content=xml_content, 
+                json_chunk=json_chunk
+              )
+            last_error_message = None
+
+            for attempt in range(max_retries):
+                try: 
+                    ## 异步调用大模型进行分块生成   
+                    answer = await self._call_llm_for_chunk(
+                        current_prompt
+                    )
+                    # 保存LLM输入输出
+                    self._save_prompt_answer(
+                        instance_node_id=instance_node_id,
+                        prompt=current_prompt,
+                        answer=answer,
+                    )
+
+                    # 验证XML格式并保存
+                    _, filled_xml = (
+                        self._parse_and_validate_filled_xml(
+                            answer
+                        )
+                    )
+                    self._save_filled_xml(
+                        xml_chunk_path,
+                        filled_xml,
+                    )
+
+                    logger.info(f"实例 {instance_node_id} 生成成功")
+                    return self._build_success_result(
+                        instance_node_id=instance_node_id,
+                        original_node_id=original_node_id,
+                        list_index=list_index,
+                        filled_xml=filled_xml,
+                        xml_chunk_path=xml_chunk_path,
+                        json_chunk_path=json_chunk_path,
+                    )
+                                            
+                except (
+                    APIConnectionError, 
+                    APIError, 
+                    etree.XMLSyntaxError, 
+                    PermissionError,
+                    ValueError,
+                ) as exc:
+                    last_error_message = str(exc)
+                    logger.warning(
+                        "实例 %s 第 %d 次失败: %s",
+                        instance_node_id,
+                        attempt + 1,
+                        exc,
+                    )
                     if attempt < max_retries - 1:
                         await asyncio.sleep(2 ** attempt)  # 指数退避
-                    else:
-                        # 重试耗尽后的处理失败结果
-                        # 使用模板作为xml块
-                        result = {
-                            "instance_node_id": instance_node_id,
-                            "original_node_id": original_node_id,
-                            "list_index": list_index,
-                            #"content": xml_content,
-                            "status": "failed",
-                            "error": last_error_message
-                        }
-                        #logger.info(f"实例 {instance_node_id} 生成失败，直接使用模板默认值")
-                        return result
-            else:
-                # 解析并验证XML
-                parser = etree.XMLParser(remove_blank_text=True)
-                xml_tree = etree.fromstring(xml_content, parser)
+ 
+            # 重试耗尽后的处理失败结果
+            # 使用模板作为xml块
+            return self._build_failed_result(
+                instance_node_id=instance_node_id,
+                original_node_id=original_node_id,
+                list_index=list_index,
+                error=last_error_message or "未知错误",
+            )
+            
+        except Exception as exc:
+            logger.exception(
+                "实例 %s 处理失败",
+                instance_node_id,
+            )
 
-                # 移除锚点属性（不影响仿真引擎解析）- 保留parent-json-key和full-json-path
-                # for attr in ["中文描述", "单位或取值或数据类型", "举例"]:
-                #     if attr in xml_tree.attrib:
-                #         del xml_tree.attrib[attr]
-
-                # 保存填充后的XML分块
-                filled_xml = etree.tostring(xml_tree, encoding="unicode", pretty_print=True)
-                Path(xml_chunk_path).write_text(filled_xml, encoding="utf-8")
-                result = {
-                    "instance_node_id": instance_node_id,
-                    "original_node_id": original_node_id,
-                    "list_index": list_index,
-                    "content": filled_xml,
-                    "status": "success",
-                    "xml_chunk_path": xml_chunk_path,
-                    "json_chunk_path": json_chunk_path
-                }
-                logger.info(f"实例 {instance_node_id} 直接使用模板默认值")
-
-        except Exception as e:
-            logger.error(f"实例 {instance_node_id} 生成过程异常: {e}\n{traceback.format_exc()}")
-            result = {
+            return {
                 "instance_node_id": instance_node_id,
                 "status": "failed",
-                "error": str(e)
+                "error": str(exc),
             }
-            return result
 
     # ===================== 核心修改5：批量生成所有实例的片段内容 =====================
     async def fill_all_chunk_instances(
@@ -1355,7 +1628,7 @@ class TDVAXMLGenerator:
                 logger.warning(f"未找到原始片段（node_id={original_node_id}），跳过实例{instance_id}")
                 continue
             # 直接调用，无需session
-            tasks.append(self.generate_fragment_content(None, instance_id, fragment))
+            tasks.append(self.generate_fragment_content(instance_id, fragment))
         
         # 并行执行
         results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -1613,6 +1886,7 @@ class TDVAXMLGenerator:
             ## 记录开始时间
             start_time = time.time()
 
+            # 0. 初始化工作目录
             self.prepare_workspace()
 
             # 1. 创建索引
@@ -1632,13 +1906,11 @@ class TDVAXMLGenerator:
            
 
             # 对全部实体统一分配业务ID
-            # ==========================================================
             entity_data_map = self._inject_ids_into_entity_data_map(
                 entity_data_map
             )
     
-            # 【新增】立即保存全局实体ID映射。
-            # 后续并行生成或失败重试时必须复用这份映射。
+            # 保存全局实体ID映射，后续并行生成或失败重试时必须复用这份映射。
             self.entity_id_registry.save(
                 self.entity_id_map_file
             )
@@ -1658,8 +1930,14 @@ class TDVAXMLGenerator:
             logger.info(f"实体数据映射已保存至: {self.entity_map_file}")
 
             # 4. 生成多实例分块
-            xml_chunks, chunk_mapping = self.generate_aligned_chunks(fragments, entity_data_map)
-            
+            xml_chunks, json_chunks, chunk_mapping = self.generate_aligned_chunks(fragments, entity_data_map)
+
+            # 统一写入文件
+            self.save_chunk_bundle(
+                xml_chunks=xml_chunks,
+                json_chunks=json_chunks,
+                chunk_mapping=chunk_mapping,
+            )
 
             # 5. 异步填充分块内容
             fragment_results = await self.fill_all_chunk_instances(fragments, chunk_mapping)
@@ -1742,8 +2020,11 @@ async def main() -> None:
         ex_info_path=str(ex_info_path)
     )
 
-    # 执行生成流程    
-    await generator.run(json_data)
+    # 执行生成流程
+    try:
+        await generator.run(json_data)
+    finally:
+        await generator.close()
 
 
 
