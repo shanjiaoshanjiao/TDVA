@@ -1,0 +1,10 @@
+<EventAction_ChangeMissionStatus xml-id="node_2534_0" parent-id="2479_0" node-type="Node" parent-json-key="unknown" full-json-path="EventAction_ChangeMissionStatus">
+  <!--MissionID 中文描述：任务GUID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12）-->
+  <MissionID/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+  <!--ID 中文描述：动作GUID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12）-->
+  <ID/>
+  <!--NewStatus 中文描述：新状态 | 生成约束：0：激活状态；1：未激活；2：已完成 | 举例：0-->
+  <NewStatus/>
+</EventAction_ChangeMissionStatus>

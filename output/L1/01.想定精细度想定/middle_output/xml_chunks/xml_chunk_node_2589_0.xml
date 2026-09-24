@@ -1,0 +1,4 @@
+<Cov_Ill xml-id="node_2589_0" parent-id="2550_0" node-type="Node" parent-json-key="unknown" full-json-path="Cov_Ill">
+  <!--Seg 中文描述：传感器照射角度 | 生成约束：取值：PB1，PB2，PMA1，PMA2，PMF2，PS1。PS2，SB1，SB2，SMA1，SMA2，SMF1，SMF2。SS1，SS2 | 举例：PB1,PB2,PMF2,SB1,SB2,SMF1,-->
+  <Seg/>
+</Cov_Ill>

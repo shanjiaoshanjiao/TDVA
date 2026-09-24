@@ -1,0 +1,22 @@
+<WeaponImpact xml-id="node_3130_0" parent-id="3435_0" node-type="Node" parent-json-key="unknown" full-json-path="WeaponImpact">
+  <!--Type 中文描述：武器碰撞类型 | 生成约束：0：空爆；1：电磁脉冲-->
+  <Type/>
+  <!--RangeSymbols 中文描述：被探测单元的探测范围信息 | 生成约束：如果没有，不写入XML-->
+  <RangeSymbols/>
+  <!--CH 中文描述：当前朝向-->
+  <CH/>
+  <!--ID 中文描述：武器碰撞ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12） | 举例：f105baf3-c72b-4e1e-8d4c-53bf9fe3b643-->
+  <ID/>
+  <!--Name 中文描述：武器碰撞名称-->
+  <Name/>
+  <!--CA 中文描述：当前海拔高度-->
+  <CA/>
+  <!--CS 中文描述：当前速度 | 生成约束：整数 | 举例：300-->
+  <CS/>
+  <!--Message 中文描述：信息 | 生成约束：如果没有，不写入XML-->
+  <Message/>
+  <!--Lat 中文描述：纬度 | 生成约束：浮点数 | 举例：33.0-->
+  <Lat/>
+  <!--Lon 中文描述：经度 | 生成约束：浮点数 | 举例：120.0-->
+  <Lon/>
+</WeaponImpact>

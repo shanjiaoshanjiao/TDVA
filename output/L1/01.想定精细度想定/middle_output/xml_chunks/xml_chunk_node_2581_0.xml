@@ -1,0 +1,8 @@
+<EventAction_LuaScript xml-id="node_2581_0" parent-id="2479_0" node-type="Node" parent-json-key="unknown" full-json-path="EventAction_LuaScript">
+  <!--ID 中文描述：动作ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12） | 举例：d3fe69f3-4d09-4e76-aa34-e7581039f2d5-->
+  <ID/>
+  <!--ScriptText 中文描述：Lua脚本 | 举例：ScenEdit_SetEvent（'延迟15分钟激活其他打击任务', {IsActive=true}）-->
+  <ScriptText/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+</EventAction_LuaScript>

@@ -1,0 +1,12 @@
+<EventTrigger_UnitDetected xml-id="node_2530_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_UnitDetected">
+  <!--MCL 中文描述：目标识别状态 | 生成约束：0：未知；1：已知空域（如空中、地面）；2：已知类型（如飞机、导弹）；3：已知级别；4：确认对象-->
+  <MCL/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+  <!--ID 中文描述：触发器ID-->
+  <ID/>
+  <!--ODS 中文描述：探测推演方 | 举例：中国-->
+  <ODS/>
+  <!--TargetFilter 中文描述：目标过滤器 | 生成约束：参照8.8.1目标过滤器（TargetFilter）-->
+  <TargetFilter/>
+</EventTrigger_UnitDetected>

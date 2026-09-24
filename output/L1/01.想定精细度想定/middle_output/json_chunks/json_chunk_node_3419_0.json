@@ -1,0 +1,13 @@
+{
+  "node_id": "node_3419_0",
+  "parent_node_id": [
+    "2473_0"
+  ],
+  "node_type": "Node",
+  "data": {},
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_3319_0"
+  ]
+}

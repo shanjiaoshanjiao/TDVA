@@ -21,3 +21,9 @@ from .package_runtime import (
     validate_package,
     write_package_report,
 )
+
+from .template_xml_builder import (
+    TemplateXmlBuilder,
+    is_nan,
+    sanitize_xml_name,
+)

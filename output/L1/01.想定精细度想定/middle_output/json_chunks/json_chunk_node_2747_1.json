@@ -1,0 +1,15 @@
+{
+  "node_id": "node_2747_1",
+  "parent_node_id": [
+    "3411_1",
+    "3432_1",
+    "3433_1",
+    "3428_1",
+    "3426_1"
+  ],
+  "node_type": "Node",
+  "data": {},
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

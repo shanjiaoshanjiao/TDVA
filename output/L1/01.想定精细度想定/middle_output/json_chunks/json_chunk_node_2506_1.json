@@ -1,0 +1,33 @@
+{
+  "node_id": "node_2506_1",
+  "parent_node_id": [
+    "2473_1"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Missions": {
+      "_position": [
+        "Scenario",
+        "Sides",
+        [
+          "Side",
+          1
+        ],
+        "Missions"
+      ],
+      "_parent_json_key": "Side[1]",
+      "_full_path_str": "Scenario -> Sides -> Side[1] -> Missions"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_2531_1",
+    "node_2522_1",
+    "node_2554_1",
+    "node_2557_1",
+    "node_2494_1",
+    "node_2502_1",
+    "node_2538_1"
+  ]
+}

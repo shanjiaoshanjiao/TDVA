@@ -1,0 +1,52 @@
+<MapProfile xml-id="node_2555_0" parent-id="2473_0" node-type="Node" parent-json-key="unknown" full-json-path="MapProfile">
+  <!--RSVisible_AGWeapon 中文描述：显示对地打击范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_AGWeapon/>
+  <!--ShowLatLonGrid 中文描述：是否显示经纬网格 | 生成约束：False:否；True：是 | 举例：False-->
+  <ShowLatLonGrid/>
+  <!--RSVisible_ASWSensor 中文描述：显示对潜探测范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_ASWSensor/>
+  <!--RSVisible_ASSensor 中文描述：显示对海探测范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_ASSensor/>
+  <!--MergeRangeSymbols 中文描述：是否融合 | 生成约束：False:否；True：是 | 举例：False-->
+  <MergeRangeSymbols/>
+  <!--ShowNonFriendly 中文描述：是否显示非友方探测和打击范围 | 生成约束：False:否；True：是 | 举例：False-->
+  <ShowNonFriendly/>
+  <!--RSVisible_ASWeapon 中文描述：显示对海打击范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_ASWeapon/>
+  <!--Layer_Relief 中文描述：是否显示彩色地图 | 生成约束：False:否；True：是 | 举例：False-->
+  <Layer_Relief/>
+  <!--ShowDatablocks 中文描述：显示单元属性 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <ShowDatablocks/>
+  <!--GodsEye 中文描述：是否采用导演视角 | 生成约束：False:否；True：是 | 举例：False-->
+  <GodsEye/>
+  <!--ViewMode 中文描述：视角 | 生成约束：0：编组视角；1：单元视角 | 举例：0-->
+  <ViewMode/>
+  <!--ShowContactEmissions 中文描述：显示目标电磁辐射 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <ShowContactEmissions/>
+  <!--ShowDatalinks 中文描述：显示数据链 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <ShowDatalinks/>
+  <!--RSVisible_AASensor 中文描述：显示对空探测范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_AASensor/>
+  <!--Layer_BMNG 中文描述：是否显示卫星影像（基础） | 生成约束：False:否；True：是 | 举例：False-->
+  <Layer_BMNG/>
+  <!--IsolatedPOVObjectID 中文描述：隔离视角 | 生成约束：如果没有，不写XML-->
+  <IsolatedPOVObjectID/>
+  <!--DayNightLighting 中文描述：是否显示昼夜 | 生成约束：False:否；True：是 | 举例：False-->
+  <DayNightLighting/>
+  <!--RSVisible_ASWWeapon 中文描述：显示对潜打击范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_ASWWeapon/>
+  <!--ShowContactEmissions_Details 中文描述：显示目标电磁辐射—详细 | 生成约束：0：所有辐射源；1：仅显示火控雷达；2：所选单元的所有电磁辐射 | 举例：0-->
+  <ShowContactEmissions_Details/>
+  <!--Layer_Borders 中文描述：是否显示边境线 + 海岸线 | 生成约束：False:否；True：是 | 举例：False-->
+  <Layer_Borders/>
+  <!--RSVisible_AAWeapon 中文描述：显示对空打击范围 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <RSVisible_AAWeapon/>
+  <!--ShowTargetingVectors 中文描述：显示雷达照射矢量 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <ShowTargetingVectors/>
+  <!--Layer_Placenames 中文描述：是否显示地名图层 | 生成约束：False:否；True：是 | 举例：False-->
+  <Layer_Placenames/>
+  <!--Name 中文描述：名称 | 生成约束：可以没有 | 举例：F-16-->
+  <Name/>
+  <!--ShowIlluminationVectors 中文描述：显示目标瞄准矢量 | 生成约束：0：所有单元；1：所选单元；2：不显示 | 举例：0-->
+  <ShowIlluminationVectors/>
+</MapProfile>

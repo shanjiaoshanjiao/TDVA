@@ -1,0 +1,8 @@
+<EventTrigger_RegularTime xml-id="node_2553_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_RegularTime">
+  <!--ID 中文描述：触发器ID-->
+  <ID/>
+  <!--Interval 中文描述：时间间隔-->
+  <Interval/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+</EventTrigger_RegularTime>

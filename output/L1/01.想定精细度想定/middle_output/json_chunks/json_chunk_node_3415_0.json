@@ -1,0 +1,28 @@
+{
+  "node_id": "node_3415_0",
+  "parent_node_id": [
+    "node_root"
+  ],
+  "node_type": "Node",
+  "data": {
+    "SimEvents": {
+      "Triggers": null,
+      "Conditions": null,
+      "Actions": null,
+      "_position": [
+        "Scenario",
+        "SimEvents"
+      ],
+      "_parent_json_key": "Scenario",
+      "_full_path_str": "Scenario -> SimEvents"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_2570_0",
+    "node_2561_0",
+    "node_2738_0",
+    "node_2488_0"
+  ]
+}

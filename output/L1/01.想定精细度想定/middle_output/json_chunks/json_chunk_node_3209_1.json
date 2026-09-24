@@ -1,0 +1,32 @@
+{
+  "node_id": "node_3209_1",
+  "parent_node_id": [
+    "3408_1"
+  ],
+  "node_type": "Node",
+  "data": {
+    "FuelRec": {
+      "Name": null,
+      "GUID": "hsfw-datafuel-0000000000001322",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          1
+        ],
+        "Fuel",
+        [
+          "FuelRec",
+          0
+        ]
+      ],
+      "_parent_json_key": "Fuel",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Fuel -> FuelRec[0]",
+      "ID": "83d01e85-4639-477d-a4e5-9a1f2ec046ef"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

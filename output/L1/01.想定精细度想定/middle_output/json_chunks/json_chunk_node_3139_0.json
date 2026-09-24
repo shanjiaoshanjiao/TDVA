@@ -1,0 +1,24 @@
+{
+  "node_id": "node_3139_0",
+  "parent_node_id": [
+    "3437_0"
+  ],
+  "node_type": "Node",
+  "data": {
+    "WeatherProfile": {
+      "Temp": "15",
+      "Pressure": "1013.25",
+      "RL": "86.17",
+      "_position": [
+        "Scenario",
+        "GlobalWeather",
+        "WeatherProfile"
+      ],
+      "_parent_json_key": "GlobalWeather",
+      "_full_path_str": "Scenario -> GlobalWeather -> WeatherProfile"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

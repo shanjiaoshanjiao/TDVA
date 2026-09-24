@@ -1,0 +1,40 @@
+{
+  "node_id": "node_2550_4",
+  "parent_node_id": [
+    "2492_4",
+    "2519_4"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Sensor": {
+      "Name": "通用红外行扫描仪 (IRLS)",
+      "GUID": "hsfw-datasensor-00000000000892",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          1
+        ],
+        "Sensors",
+        [
+          "Sensor",
+          1
+        ]
+      ],
+      "_parent_json_key": "Sensors",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[1]",
+      "ID": "e7a8a4f4-6ba9-4741-ade2-c3397cf11b88"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_6_4",
+    "node_5_4",
+    "node_2591_4",
+    "node_2589_4",
+    "node_2562_4",
+    "node_2551_4"
+  ]
+}

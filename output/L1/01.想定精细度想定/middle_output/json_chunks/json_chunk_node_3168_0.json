@@ -1,0 +1,30 @@
+{
+  "node_id": "node_3168_0",
+  "parent_node_id": [
+    "3423_0"
+  ],
+  "node_type": "Node",
+  "data": {
+    "ORBATItemMission": {
+      "Name": "依托RQ-1B型“捕食者”无人机，对指定区域实施全天候、高精度战场侦察，获取蓝方部署及动态情报",
+      "_position": [
+        "Scenario",
+        "Sides",
+        [
+          "Side",
+          0
+        ],
+        "ORBATMission",
+        [
+          "ORBATItemMission",
+          0
+        ]
+      ],
+      "_parent_json_key": "ORBATMission",
+      "_full_path_str": "Scenario -> Sides -> Side[0] -> ORBATMission -> ORBATItemMission[0]"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

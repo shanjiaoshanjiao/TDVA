@@ -1,0 +1,58 @@
+<EscortMission xml-id="node_2502_0" parent-id="2506_0" node-type="Node" parent-json-key="unknown" full-json-path="EscortMission">
+  <!--SISIH 中文描述：推演方由人扮演时删除该任务 | 生成约束：False:否；True：是 | 举例：False-->
+  <SISIH/>
+  <!--TankerMinNumber_Airborne 中文描述：加油机数量——在空-->
+  <TankerMinNumber_Airborne/>
+  <!--Formation_Attack 中文描述：攻击队形 | 生成约束：保留接口-->
+  <Formation_Attack/>
+  <!--FlightSize 中文描述：飞机编队规模 | 生成约束：0：无；1：单机；2：2机编队；3：3机编队；4：4机编队；5：6机编队 | 举例：2-->
+  <FlightSize/>
+  <!--Category 中文描述：任务类别 | 生成约束：0：任务；1：任务包；2：任务池 | 举例：0-->
+  <Category/>
+  <!--FuelQtyToStartLookingForTanker_Airborne 中文描述：燃油数量多少时寻找加油机——在空-->
+  <FuelQtyToStartLookingForTanker_Airborne/>
+  <!--TransitTerrainFollowing_Aircraft 中文描述：飞机出航地形跟随 | 生成约束：布尔值 | 举例：TRUE-->
+  <TransitTerrainFollowing_Aircraft/>
+  <!--Formation_Cruise 中文描述：巡航队形 | 生成约束：保留接口-->
+  <Formation_Cruise/>
+  <!--TankerMinNumber_Total 中文描述：加油机数量——总共-->
+  <TankerMinNumber_Total/>
+  <!--ETMID：无辅助信息-->
+  <ETMID/>
+  <!--TankerUsage 中文描述：加油机用法 | 生成约束：0：自动使用；1：任务中使用 | 举例：0-->
+  <TankerUsage/>
+  <!--MinAircraftReq 中文描述：护航任务所需最低飞机数 | 举例：2（批次）= 2 x 编队规模-->
+  <MinAircraftReq/>
+  <!--LaunchMissionWithoutTankersInPlace 中文描述：加油机没有在位时允许启动任务 | 生成约束：为FALSE不输出到XML | 举例：True-->
+  <LaunchMissionWithoutTankersInPlace/>
+  <!--TankerMaxDistance_Airborne 中文描述：空中受油机最大距离寻找加油机——在空-->
+  <TankerMaxDistance_Airborne/>
+  <!--UseGroupSizeHardLimit 中文描述：水面舰艇或潜艇数低于编队规模要求，不能出击 （根据基地编组） | 生成约束：布尔值 | 举例：False-->
+  <UseGroupSizeHardLimit/>
+  <!--TankerMinNumber_Station 中文描述：加油机数量——在驻地-->
+  <TankerMinNumber_Station/>
+  <!--TankerMissionList 中文描述：任务中的加油机列表-->
+  <TankerMissionList/>
+  <!--StationThrottle_Aircraft 中文描述：飞机阵位油门 | 生成约束：飞机的油门取值：；1：低速；2：巡航；3：军用；4：加力；null：不定；覆盖护航飞机挂载中规定的阵位高度-->
+  <StationThrottle_Aircraft/>
+  <!--MaxReceiversInQueuePerTanker_Airborne 中文描述：加油机允许加油队列长度-->
+  <MaxReceiversInQueuePerTanker_Airborne/>
+  <!--TankerFollowsReceivers 中文描述：加油机是否遵循受油规则 | 生成约束：False：否；True：是 | 举例：False-->
+  <TankerFollowsReceivers/>
+  <!--ActionPlanName 中文描述：行动预案名称 | 生成约束：如果没有，不写XML | 举例：行动预案1-->
+  <ActionPlanName/>
+  <!--TransitThrottle_Aircraft 中文描述：飞机出航油门 | 生成约束：飞机的油门取值：；1：低速；2：巡航；3：军用；4：加力；null：不定；覆盖护航飞机挂载中规定的阵位高度-->
+  <TransitThrottle_Aircraft/>
+  <!--ID 中文描述：任务ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--Status 中文描述：任务状态 | 生成约束：0：激活状态；1：未激活；2：已完成；如果任务状态是激活，不写XML | 举例：1-->
+  <Status/>
+  <!--Name 中文描述：任务名称 | 举例：预警支援-->
+  <Name/>
+  <!--StationAltitude_Aircraft 中文描述：飞机阵位高度 | 生成约束：整数 | 举例：5000-->
+  <StationAltitude_Aircraft/>
+  <!--TransitAltitude_Aircraft 中文描述：飞机出航高度 | 生成约束：整数 | 举例：3000-->
+  <TransitAltitude_Aircraft/>
+  <!--StationTerrainFollowing_Aircraft 中文描述：飞机阵位地形跟随 | 生成约束：布尔值 | 举例：FALSE-->
+  <StationTerrainFollowing_Aircraft/>
+</EscortMission>

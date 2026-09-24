@@ -1,0 +1,6 @@
+<EventTrigger_RandomTime xml-id="node_2516_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_RandomTime">
+  <LatestTime>2025-12-31T23:59:59</LatestTime>
+  <ID>TRIGGER_RANDOM_001</ID>
+  <EarliestTime>2025-01-01T00:00:00</EarliestTime>
+  <Description>随机时间触发器，用于在指定时间范围内触发事件</Description>
+</EventTrigger_RandomTime>

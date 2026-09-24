@@ -1,0 +1,4 @@
+<Ptc xml-id="node_5_0" parent-id="2550_0" node-type="Node" parent-json-key="unknown" full-json-path="Ptc">
+  <!--Seg 中文描述：俯仰角的探测角度 | 生成约束：整数值，取值范围为0-360 | 举例：180-->
+  <Seg/>
+</Ptc>

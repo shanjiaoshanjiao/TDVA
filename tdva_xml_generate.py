@@ -29,18 +29,12 @@ import lxml
 from lxml import etree
 from py2neo import Graph, NodeMatcher
 
-from XMLGenerator import XMLGenerator
-#import xml.etree.ElementTree as ET
 from lxml import etree as ET
 from xml.sax.saxutils import escape
 
 import pymysql
 from fuzzywuzzy import fuzz
 
-from core.xml_runtime import  (
-    DocumentGenerationRequest,
-    prepare_document_workspace,
-)
 
 # 配置日志
 logging.basicConfig(
@@ -127,7 +121,6 @@ def is_nan(value):
     except:
         return False
 
-# ===================== 核心修改1：递归解析多层嵌套JSON，返回List所有匹配元素 =====================
 
 def normalize_string(s: str) -> str:
     """
@@ -155,7 +148,6 @@ def normalize_string(s: str) -> str:
     #         break  # 匹配到一个后缀即停止，避免过度处理
     
     return normalized
-
 
 
 def extract_nested_entity_data(
@@ -352,130 +344,23 @@ def extract_nested_entity_data(
     return matched_data_list
 
 
-def process_document(input_path):
-    """主处理流程：优化表格转换逻辑"""
-    md = MarkItDown(
-        docx_options={
-            "detect_merged_cells": True,
-            "preserve_merged_cell_position": True
-        },
-        markdown_options={"table_indentation": 0}
+
+# 格式化XML（移除编码声明，直接生成带缩进的Unicode字符串）
+def serialize_xml_element(elem: etree._Element, indent: str = "  ") -> str:
+    """使用lxml格式化XML（无编码声明，仅返回片段）"""
+    # 生成带缩进的字节流，再解码为Unicode（避免编码声明）
+    xml_bytes = etree.tostring(
+        elem,
+        encoding='utf-8',
+        pretty_print=True,  # lxml自带缩进
+        xml_declaration=False,  # 关键：不生成XML声明
+        with_comments=True  # 保留注释节点
     )
-    
-    # DOCX转Markdown
-    result = md.convert(input_path)
-    # 应用表格处理
-    merger = EnhancedTableMerger()
-    processed_md = merger.process_text_block(result.text_content)
+    # 解码为字符串，清理空行
+    xml_str = xml_bytes.decode('utf-8')
+    clean_xml = "\n".join([line for line in xml_str.split("\n") if line.strip()])
+    return clean_xml
 
-    return processed_md
-
-
-class EnhancedTableMerger:
-    def __init__(self):
-        self.current_table = []
-        self.parent_node = None
-        self.in_table = False
-
-    def is_table_line(self, line):
-        """检测表格行逻辑优化"""
-        stripped = line.strip()
-        
-        # 基础表格行检测
-        if stripped.startswith('|') and stripped.endswith('|') and stripped.count('|') >= 3:
-            # 排除特殊标题行
-            exclusion_patterns = [
-                r'联合作战实验想定',
-                r'想定格式设计文档',
-                r'^\|?\s*(\*\*)?[章节].+(\*\*)?\s*\|?$'
-            ]
-            
-            return not any(re.search(pattern, stripped) for pattern in exclusion_patterns)
-        return False
-
-    def process_table_line(self, line):
-        """改进的表格行处理逻辑，保持原结构"""
-        line = line.strip()
-        # 保留原始管道符结构
-        cells = [cell.strip() for cell in line.split('|')]
-        cells = cells[1:-1] if len(cells) > 2 else cells  # 移除首尾空列
-        
-        # 跳过格式分隔行
-        if re.match(r'^[\s:|-]+$', ''.join(cells)):
-            return
-        
-        # 父节点检测逻辑优化
-        if cells and len(cells) > 1 and cells[0].isdigit() and cells[1]:
-            self.parent_node = cells[1]
-        
-        # 空节点填充逻辑
-        if cells and len(cells) > 1 and not cells[1] and self.parent_node:
-            cells[1] = self.parent_node
-        
-        self.current_table.append(cells)
-
-    def finalize_table(self):
-        """构建Markdown表格并重置状态"""
-        if not self.current_table:
-            return ""
-        
-        # 计算最大列数
-        max_cols = max(len(row) for row in self.current_table)
-        
-        # 构建表格
-        output_lines = []
-        header_processed = False
-        
-        for i in range(len(self.current_table)):
-            # 保证所有行具有相同的列数
-            row = self.current_table[i]
-            if max_cols - len(row) == 0 and "节点名称" in row:
-                print(self.current_table[i+1])
-            padded_row = [''] * (max_cols - len(row)) + row
-            # 添加表头分隔符
-            row_str = "".join([r.strip() for r in row if r.strip() != ""])
-            if len(row_str.strip()) == 0:
-                continue
-            if not header_processed and len(row) > 0:
-                output_lines.append("| " + " | ".join(padded_row) + " |")
-                output_lines.append("| " + " | ".join(['---'] * max_cols) + " |")
-                header_processed = True
-            else:
-                output_lines.append("| " + " | ".join(padded_row) + " |")
-        
-        self.in_table = False
-        self.current_table = []
-        self.parent_node = None
-        return "\n".join(output_lines)
-
-    def process_text_block(self, text):
-        """处理文本块，保留原始结构"""
-        processed_lines = []
-        lines = text.split('\n')
-        
-        for i, line in enumerate(lines):
-            # 表格开始检测
-            if not self.in_table and self.is_table_line(line):
-                self.in_table = True
-                self.current_table = []
-                self.parent_node = None
-            
-            # 表格结束检测
-            if self.in_table and not self.is_table_line(line):
-                processed_lines.append(self.finalize_table())
-                self.in_table = False
-            
-            # 表格行处理
-            if self.in_table:
-                self.process_table_line(line)
-            else:
-                processed_lines.append(line)
-        
-        # 处理文件末尾的表格
-        if self.in_table:
-            processed_lines.append(self.finalize_table())
-        
-        return '\n'.join(processed_lines)
 
 
 @dataclass
@@ -596,7 +481,17 @@ class GlobalIdRegistry:
 
 
 
-class Neo4jXMLGenerator:
+class TDVAXMLGenerator:
+    """
+    执行单个 XML 文档的 TDVA 生成流程。
+
+    负责：
+    1. 解析模板和输入 JSON；
+    2. 建立 XML/JSON 分块；
+    3. 调用 LLM 填充分块；
+    4. 验证生成结果；
+    5. 组装最终 XML。
+    """
     def __init__(
             self,
             neo4j_uri: str, 
@@ -622,29 +517,22 @@ class Neo4jXMLGenerator:
         self.semaphore = asyncio.Semaphore(max_workers)
         self.id_map = {}  # 全局ID映射表: {node_id: filename}
         # 分块映射表存储路径
-        self.chunk_mapping_path = chunk_mapping_path
-        self.entity_map_file = entity_map_file
-        self.prompt_path = prompt_path
+        self.chunk_mapping_path = Path(chunk_mapping_path)
+        self.entity_map_file = Path(entity_map_file)
+        self.prompt_path = Path(prompt_path)
         # JSON分块存储路径
-        self.json_chunk_path = json_chunk_path
+        self.json_chunk_path = Path(json_chunk_path)
         # XML分块存储路径
-        self.xml_chunk_path = xml_chunk_path
+        self.xml_chunk_path = Path(xml_chunk_path)
         # 最终XML输出路径（新增：按List元素分文件）
-        self.final_xml_path = final_xml_path
-        # 【修改2】确保最终XML目录存在（避免重复创建）
-        os.makedirs(self.final_xml_path, exist_ok=True)
-
+        self.final_xml_path = Path(final_xml_path)
         # 成功生成微分块比例与用时保存
-        self.ex_info_file = ex_info_path
-        # 核心修改：创建中间输出目录
-        # 【修改3】先创建根目录，再创建子目录（解决首次运行目录不存在问题）
-        # os.makedirs("./middle_output", exist_ok=True)
-        # os.makedirs("./middle_output/prompt", exist_ok=True)
+        self.ex_info_file = Path(ex_info_path)
         # 实体业务ID注册表，与Node ID分开管理。
         self.entity_id_registry = GlobalIdRegistry()
         
         # 建议作为构造参数传入；没有传入时使用默认路径。
-        self.entity_id_map_file = (
+        self.entity_id_map_file = Path(
             entity_id_map_file
             if entity_id_map_file
             else os.path.join(self.final_xml_path, "entity_id_map.json")
@@ -654,6 +542,30 @@ class Neo4jXMLGenerator:
             self.entity_id_registry = GlobalIdRegistry.load(
                 self.entity_id_map_file
             )
+
+
+    def prepare_workspace(self) -> None:
+        """创建本次生成所需的目录。"""
+        directories = (
+            self.prompt_path,
+            self.json_chunk_path,
+            self.xml_chunk_path,
+            self.final_xml_path,
+        )
+
+        for directory in directories:
+            directory.mkdir(parents=True, exist_ok=True)
+
+        # 这些路径是文件，需要创建其父目录，而不是把文件路径建成目录。
+        file_paths = (
+            self.chunk_mapping_path,
+            self.entity_map_file,
+            self.ex_info_file,
+            self.entity_id_map_file,
+        )
+
+        for file_path in file_paths:
+            file_path.parent.mkdir(parents=True, exist_ok=True)
 
 
     def create_indexes(self):
@@ -666,16 +578,17 @@ class Neo4jXMLGenerator:
             logger.error(f"创建索引失败: {e}")
 
     # ===================== 生成多实例分块（适配匹配后List每个元素） =====================
-    def generate_xml_chunks(
+    def generate_aligned_chunks(
         self, 
         fragments: List[Dict], 
         entity_data_map: Dict[str, List[Dict]]  # 新增：节点类型->List元素字典
     ) -> Tuple[Dict, Dict]:
-        """储存XML分块（为List每个元素生成独立分块）"""
-        # 确保分块存储目录存在
-        os.makedirs(self.xml_chunk_path, exist_ok=True)
-        os.makedirs(self.json_chunk_path, exist_ok=True)
-        
+        """
+        根据模板片段和 JSON 实例创建：
+        - XML chunks
+        - JSON chunks
+        - chunk mapping
+        """        
         xml_chunks_dict = dict()
         chunk_mapping = {}  # 分块映射表（key: node_id_索引）
         node_instance_count_map = {}  # 记录每个原始节点生成了几个实例
@@ -797,7 +710,7 @@ class Neo4jXMLGenerator:
                     full_path_str = fragment.get("node_name", "unknown")
 
 
-                xml_chunk = self.generate_fragment_to_xml_chunk(fragment, instance_node_id, instance_parent_id, node_type, parent_json_key, full_path_str)
+                xml_chunk = self.serialize_fragment_as_xml_chunk(fragment, instance_node_id, instance_parent_id, node_type, parent_json_key, full_path_str)
                 xml_filename = f"xml_chunk_{instance_node_id}.xml"
                 
 
@@ -842,7 +755,6 @@ class Neo4jXMLGenerator:
         return xml_chunks_dict, chunk_mapping
     
 
-
     def _get_node_name_from_path(self, entity_path: str) -> str:
         if not entity_path:
             return ""
@@ -854,6 +766,7 @@ class Neo4jXMLGenerator:
             node_name = node_name.split("[", 1)[0]
 
         return node_name
+
 
     def _get_entity_type(self, value: dict, entity_path: str = ""):
         if not isinstance(value, dict):
@@ -1026,12 +939,16 @@ class Neo4jXMLGenerator:
         }
         
         return json_chunk
-    
+
+
+
+
+
     # 在XML中嵌入上层JSON键信息
-    def generate_fragment_to_xml_chunk(self, 
+    def serialize_fragment_as_xml_chunk(self, 
                                     fragment: Dict, 
                                     node_id: str, 
-                                    parent_node_id: list, 
+                                    parent_node_ids: list, 
                                     node_type: str, 
                                     parent_json_key: str = "unknown", 
                                     full_path_str: str = "unknown"):
@@ -1043,8 +960,8 @@ class Neo4jXMLGenerator:
         
         # 2. 嵌入锚点属性（保留原有逻辑，优化parent-id处理）
         node_element.set("xml-id", node_id)
-        # 处理parent_node_id（列表转字符串，避免XML属性语法错误）
-        parent_id_str = ",".join(parent_node_id) if isinstance(parent_node_id, list) else str(parent_node_id)
+        # 处理parent_node_ids（列表转字符串，避免XML属性语法错误）
+        parent_id_str = ",".join(parent_node_ids) if isinstance(parent_node_ids, list) else str(parent_node_ids)
         node_element.set("parent-id", parent_id_str)
         node_element.set("node-type", node_type)
         node_element.set("parent-json-key", sanitize_string(parent_json_key))
@@ -1081,85 +998,11 @@ class Neo4jXMLGenerator:
             # 创建字段元素
             field_elem = etree.SubElement(node_element, field_name)
         
-        # 4. 格式化XML（移除编码声明，直接生成带缩进的Unicode字符串）
-        def _prettify_lxml(elem: etree._Element, indent: str = "  ") -> str:
-            """使用lxml格式化XML（无编码声明，仅返回片段）"""
-            # 生成带缩进的字节流，再解码为Unicode（避免编码声明）
-            xml_bytes = etree.tostring(
-                elem,
-                encoding='utf-8',
-                pretty_print=True,  # lxml自带缩进
-                xml_declaration=False,  # 关键：不生成XML声明
-                with_comments=True  # 保留注释节点
-            )
-            # 解码为字符串，清理空行
-            xml_str = xml_bytes.decode('utf-8')
-            clean_xml = "\n".join([line for line in xml_str.split("\n") if line.strip()])
-            return clean_xml
-
         # 调用lxml格式化函数
-        return _prettify_lxml(node_element)
+        return serialize_xml_element(node_element)
 
 
-    # 【修改】补充上层JSON键的验证逻辑
-    def validate_chunk_alignment(self, chunk_mapping: Dict):
-        """验证分块对齐性（适配多实例 + 新增上层JSON键验证）"""
-        logger.info("开始验证分块对齐性...")
-        errors = []
-        
-        # 1. 检查Node ID唯一性
-        node_ids = list(chunk_mapping.keys())
-        if len(node_ids) != len(set(node_ids)):
-            errors.append("发现重复的Node ID，分块映射表存在冲突")
-        
-        # 2. 检查父Node ID存在性（适配多实例父ID）
-        for node_id, chunk in chunk_mapping.items():
-            parent_id = chunk["parent_node_id"]
-            if parent_id != "node_root" and not parent_id.startswith("node_root_") and parent_id not in chunk_mapping:
-                errors.append(f"节点{node_id}的父节点{parent_id}不存在于映射表中")
-        
-        # 3. 检查Field完整性（基于Graph的HAS_FIELD关系）
-        for node_id, chunk in chunk_mapping.items():
-            # 提取原始节点ID（去除索引）
-            original_node_id = int(chunk["original_node_id"])
-            # 从Graph中获取该节点的所有Field
-            field_query = """
-                MATCH (n:Node) WHERE id(n) = $node_id
-                OPTIONAL MATCH (n)-[:HAS_FIELD]->(field:Field)
-                RETURN COLLECT(field.name) AS field_names
-            """
-            field_result = self.neo4j_graph.run(field_query, node_id=original_node_id).data()
-            graph_fields = field_result[0]["field_names"] if field_result else []
-            
-            # 解析XML分块获取实际字段
-            try:
-                xml_tree = etree.parse(chunk["xml_chunk_path"])
-                xml_root = xml_tree.getroot()
-                xml_fields = [child.tag for child in xml_root if child.tag not in ["xml-id", "parent-id", "node-type"]]
-            except:
-                xml_fields = []
-                errors.append(f"无法解析XML分块 {chunk['xml_chunk_path']}")
-            
-            # 检查缺失字段
-            missing_fields = [f for f in graph_fields if f and sanitize_string(f) not in xml_fields]
-            if missing_fields:
-                errors.append(f"节点{node_id}缺失字段: {missing_fields}")
-        
-        # 【新增】4. 检查上层JSON键的有效性
-        for node_id, chunk in chunk_mapping.items():
-            if chunk["parent_json_key"] == "unknown" and chunk["full_json_path"] == "unknown":
-                logger.warning(f"节点{node_id}未找到对应的上层JSON键，可能无法溯源")
-            # 【修改5】增强full_json_path验证：检查格式是否包含分隔符
-            if not isinstance(chunk["full_json_path"], str) or "->" not in chunk["full_json_path"] and chunk["full_json_path"] != "unknown":
-                errors.append(f"节点{node_id}的完整JSON路径格式异常: {chunk['full_json_path']}")
-        
-        # 输出验证结果
-        if errors:
-            logger.error(f"分块验证发现{len(errors)}个错误: {errors}")
-            raise ValueError(f"分块验证失败: {errors}")
-        else:
-            logger.info("分块对齐验证通过，无错误")
-    
+
     def generate_fragments(self) -> List[Dict]:
         """基于图结构生成XML片段"""
         fragments = []
@@ -1285,38 +1128,7 @@ class Neo4jXMLGenerator:
         query = "MATCH (n:Node) RETURN id(n) AS node_id"
         return [record["node_id"] for record in self.neo4j_graph.run(query).data()]
     
-    def generate_fragment_schemas(self, fragments: List[Dict]) -> None:
-        """为每个片段生成XSD子模式（保留原有逻辑）"""
-        frag_chunk_path = "./frag_chunk"
-        os.makedirs(frag_chunk_path, exist_ok=True)
-        try:
-            for fragment in fragments:
-                # 简化模式生成 - 实际项目中应使用完整模式
-                schema_content = f"""<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-                    <xs:element name="{sanitize_string(fragment['node_name'])}">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element ref="xi:include" minOccurs="0" maxOccurs="unbounded"/>
-                            </xs:sequence>
-                            {self._generate_attributes_schema(fragment)}
-                        </xs:complexType>
-                    </xs:element>
-                </xs:schema>"""
-                schema_path = os.path.join(frag_chunk_path, f"frag_{fragment['node_id']}.xsd")
-                Path(schema_path).write_text(schema_content, encoding="utf-8")
-                fragment['schema_path'] = schema_path
-                
-        except Exception as e:
-            logger.error(f"生成片段模式失败: {e}\n{traceback.format_exc()}")
-    
-    def _generate_attributes_schema(self, fragment: Dict) -> str:
-        """生成属性定义（保留原有逻辑）"""
-        attributes = []
-        for attr in fragment.get("attributes", []):
-            if not is_nan(attr.get("name")):
-                attributes.append(f'<xs:attribute name="{sanitize_string(attr["name"])}" type="xs:string"/>')
-        return "\n".join(attributes)
-    
+
     def _build_llm_prompt(self, fragment: Dict, xml_content: str, json_chunk: Dict) -> str:
         """重构LLM提示词：仅做字段级填充（保留原有逻辑）"""
         exclude_keys = {"_position", "_parent_json_key", "_full_path_str"}
@@ -1358,8 +1170,6 @@ class Neo4jXMLGenerator:
         # 这里应使用json.loads解析json_str，示例直接返回一个模拟字典
         # 实际使用时请替换为真正的解析逻辑
         return xml_str
-
-
 
 
     # ===================== 核心修改4：适配多实例的片段内容生成 =====================
@@ -1528,7 +1338,7 @@ class Neo4jXMLGenerator:
             return result
 
     # ===================== 核心修改5：批量生成所有实例的片段内容 =====================
-    async def generate_all_fragment_instances(
+    async def fill_all_chunk_instances(
         self, 
         fragments: List[Dict], 
         chunk_mapping: Dict
@@ -1563,7 +1373,7 @@ class Neo4jXMLGenerator:
         return final_results
     
 
-    def assemble_all_instance_xml(self, chunk_mapping):
+    def assemble_final_xml(self, chunk_mapping):
         """
         基于JSON路径递归查找父节点，构建完整XML树
         """
@@ -1787,7 +1597,7 @@ class Neo4jXMLGenerator:
 
 
     # ===================== 新增：主执行函数（整合所有逻辑） =====================
-    def run(
+    async def run(
         self, 
         json_data: Dict  # 输入的长JSON数据
     ) -> List[str]:
@@ -1799,11 +1609,11 @@ class Neo4jXMLGenerator:
         4. 异步填充分块内容
         5. 为每个List元素生成独立XML + 合并完整XML
         """
-
-
         try:
             ## 记录开始时间
             start_time = time.time()
+
+            self.prepare_workspace()
 
             # 1. 创建索引
             self.create_indexes()
@@ -1812,15 +1622,7 @@ class Neo4jXMLGenerator:
             fragments = self.generate_fragments()
             if not fragments:
                 raise ValueError("未从Neo4j生成任何片段")
-                
-            ## 保存片段（调试用）
-            # fragment_file = "D:\\非shemi工作内容\\陈xz_论文相关\\llm_xiangding_test_code\\test\\fragments.json"
-            # Path(fragment_file).write_text(
-            #     json.dumps(fragments, ensure_ascii=False, indent=2),
-            #     encoding="utf-8"
-            # )
-            # logger.info(f"片段已保存至: {fragment_file}")
-            
+                            
             # 3. 提取JSON中各节点类型对应的List元素
             entity_data_map = {}
             for fragment in fragments:
@@ -1834,7 +1636,6 @@ class Neo4jXMLGenerator:
             entity_data_map = self._inject_ids_into_entity_data_map(
                 entity_data_map
             )
-
     
             # 【新增】立即保存全局实体ID映射。
             # 后续并行生成或失败重试时必须复用这份映射。
@@ -1857,19 +1658,11 @@ class Neo4jXMLGenerator:
             logger.info(f"实体数据映射已保存至: {self.entity_map_file}")
 
             # 4. 生成多实例分块
-            xml_chunks, chunk_mapping = self.generate_xml_chunks(fragments, entity_data_map)
-            #os._exit(0)
+            xml_chunks, chunk_mapping = self.generate_aligned_chunks(fragments, entity_data_map)
+
             # 5. 异步填充分块内容
-            try:
-                # 使用新版asyncio.run，避免手动管理loop
-                fragment_results = asyncio.run(self.generate_all_fragment_instances(fragments, chunk_mapping))
-            except RuntimeError as e:
-                # 兼容已有loop的场景
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                fragment_results = loop.run_until_complete(self.generate_all_fragment_instances(fragments, chunk_mapping))
-                loop.close()  # 确保关闭loop，避免资源泄漏
-            
+            fragment_results = await self.fill_all_chunk_instances(fragments, chunk_mapping)
+        
             # 6. 检查失败实例
             failed_instances = [r for r in fragment_results if isinstance(r, dict) and r["status"] == "failed"]
             if failed_instances:
@@ -1880,7 +1673,7 @@ class Neo4jXMLGenerator:
                 sussess_ratio = 1
             
             # 7. 为每个List元素生成独立XML + 合并完整XML
-            final_xml = self.assemble_all_instance_xml(chunk_mapping)
+            final_xml = self.assemble_final_xml(chunk_mapping)
 
             final_xml_path = os.path.join(self.final_xml_path, "final_tree.xml")
             #os._exit(0)
@@ -1902,84 +1695,56 @@ class Neo4jXMLGenerator:
             raise
 
 
-if __name__ == "__main__":
+async def main() -> None:
     # 配置参数
-    # 【修改13】建议将配置移到.env文件，此处仅做示例
     NEO4J_URI = "bolt://workspace.featurize.cn:20735"
     NEO4J_USER = "neo4j"
     NEO4J_PASSWORD = "1234567890"
-    # LLM_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    # LLM_API_KEY = "sk-4070f3c735854ed89d23ffda6d9ad870"  ### 百炼
-
-    # LLM_BASE_URL = "https://xiaoai.plus/v1"   ##小爱
-    # LLM_API_KEY = "sk-5bBtXOK5stMPuSuoknkhSeHCjVnXe7cHutcHF6f35FKVQrNA"
-
     LLM_BASE_URL = "https://api.siliconflow.cn/v1"
     LLM_API_KEY ="sk-wocixetrhbgthoepmdjdycdadrcyudtepyujtqwcirkxmzvh" # 硅基API密钥
-    # 【修改14】降低max_workers，避免资源耗尽
     max_workers = 16
 
-    final_output_dir = r"D:\非shemi工作内容\陈xz_论文相关\llm_xiangding_test_code\test"
-    llm_generated_json_dir = r"D:\非shemi工作内容\陈xz_论文相关\data_generater\测试节点结构数据\L3"
+    final_output_dir = r"D:\非shemi工作内容\陈xz_论文相关\Scenario_Generation_TDVA\output"
+    llm_generated_json_file = r"D:\非shemi工作内容\陈xz_论文相关\data_generater\测试节点结构数据\L1\01.想定精细度想定_llm_extract_with_guid.json"
 
-
-    middle_output_root = "middle_output"
-    json_chunk_path = os.path.join(middle_output_root, "json_chunks")
-    xml_chunk_path = os.path.join(middle_output_root, "xml_chunks")
-    prompt_path = os.path.join(middle_output_root, "prompt")
-    chunk_mapping_file = os.path.join(middle_output_root, "chunk_mapping.json")
-    entity_map_file = os.path.join(middle_output_root, "entity_data_map.json")
-    entity_mapping_file = os.path.join(middle_output_root, "entity_data_map.json")
-    final_xml_dir = "final_xml"  # 最终输出目录
-    info_file = os.path.join(middle_output_root, "info.txt")
+          
+    # 加载长JSON数据
+    with open(llm_generated_json_file, "r", encoding="utf-8") as f:
+        json_data = json.load(f)
     
-    # 移除未使用的变量
-    # scenario_docx_path = r"D:\非shemi工作内容\陈xz_论文相关\llm_xiangding_test_code\data\波罗的海防空反导想定.docx"
-    # final_xml_path = "./final_scenario.xml"  # 原错误的文件路径
-
-
+    file_name = os.path.basename(llm_generated_json_file).replace("_llm_extract_with_guid.json", "")
+    sub_dir = os.path.basename(os.path.dirname(llm_generated_json_file))
+    exp_final_output_dir = os.path.join(final_output_dir, sub_dir, file_name)
+    output_root = Path(exp_final_output_dir)
+    middle_root = output_root / "middle_output"
+    json_chunk_path = middle_root / "json_chunks"
+    xml_chunk_path = middle_root / "xml_chunks"
+    prompt_path = middle_root / "prompt"
+    chunk_mapping_path = middle_root / "chunk_mapping.json"
+    entity_map_file = middle_root / "entity_data_map.json"
+    ex_info_path = middle_root / "info.txt"
+    final_xml_path = output_root / "final_xml"
     
-    for root, dirs, files in os.walk(llm_generated_json_dir):
-        for file in files:
-            if file.endswith("_llm_extract_with_guid.json"):
-                json_data_path = os.path.join(root, file)                
-                # 加载长JSON数据
-                with open(json_data_path, "r", encoding="utf-8") as f:
-                    json_data = json.load(f)
-                
-                file_name = file.replace("_llm_extract_with_guid.json", "")
-                sub_dir = os.path.basename(root)
-                exp_final_output_dir = os.path.join(final_output_dir, sub_dir, file_name)
-                #print(exp_final_output_dir)
-                # # 创建必要目录
-                os.makedirs(os.path.join(exp_final_output_dir, final_xml_dir), exist_ok=True)  # 核心修改：创建最终XML目录
-                if os.path.exists(os.path.join(exp_final_output_dir, final_xml_dir, "final_tree.xml")):             
-                    continue
-                # print(file_name)
-                singal_middle_output_root = os.path.join(exp_final_output_dir, middle_output_root)
-                os.makedirs(singal_middle_output_root, exist_ok=True)
-                os.makedirs(os.path.join(singal_middle_output_root, prompt_path), exist_ok=True)
-                os.makedirs(os.path.join(singal_middle_output_root, xml_chunk_path), exist_ok=True)
-                os.makedirs(os.path.join(singal_middle_output_root, json_chunk_path), exist_ok=True)
-                #os.makedirs(os.path.join(singal_middle_output_root, entity_mapping_file), exist_ok=True)
-                #os.makedirs(os.path.join(singal_middle_output_root, chunk_mapping_file), exist_ok=True)
-                
-                
-                # # 初始化生成器
-                generator = Neo4jXMLGenerator(
-                    neo4j_uri=NEO4J_URI,
-                    neo4j_auth=(NEO4J_USER, NEO4J_PASSWORD),
-                    openai_api_key=LLM_API_KEY,
-                    openai_base_url=LLM_BASE_URL,
-                    max_workers=max_workers,
-                    chunk_mapping_path=os.path.join(singal_middle_output_root, chunk_mapping_file),
-                    entity_map_file=os.path.join(singal_middle_output_root, entity_map_file),
-                    prompt_path=os.path.join(singal_middle_output_root, prompt_path),
-                    json_chunk_path=os.path.join(singal_middle_output_root, json_chunk_path),
-                    xml_chunk_path=os.path.join(singal_middle_output_root, xml_chunk_path),
-                    final_xml_path=os.path.join(exp_final_output_dir, final_xml_dir),  # 核心修改：指定最终XML输出目录
-                    ex_info_path=os.path.join(singal_middle_output_root, info_file)
-                )
-                # 执行生成流程
-                
-                generator.run(json_data)
+    # # 初始化生成器
+    generator = TDVAXMLGenerator(
+        neo4j_uri=NEO4J_URI,
+        neo4j_auth=(NEO4J_USER, NEO4J_PASSWORD),
+        openai_api_key=LLM_API_KEY,
+        openai_base_url=LLM_BASE_URL,
+        max_workers=max_workers,
+        chunk_mapping_path=str(chunk_mapping_path),
+        entity_map_file=str(entity_map_file),
+        prompt_path=str(prompt_path),
+        json_chunk_path=str(json_chunk_path),
+        xml_chunk_path=str(xml_chunk_path),
+        final_xml_path=str(final_xml_path),  # 核心修改：指定最终XML输出目录
+        ex_info_path=str(ex_info_path)
+    )
+
+    # 执行生成流程    
+    await generator.run(json_data)
+
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

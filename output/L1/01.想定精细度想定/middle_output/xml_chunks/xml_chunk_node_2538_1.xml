@@ -1,0 +1,70 @@
+<FerryMission xml-id="node_2538_1" parent-id="2506_1" node-type="Node" parent-json-key="unknown" full-json-path="FerryMission">
+  <!--TakeOffTime 中文描述：起飞时间 | 生成约束：将当前年月日时分秒对象序列化为一个 64 位二进制值；如果没有任务开始时间，不写XML-->
+  <TakeOffTime/>
+  <!--TimeOnTarget 中文描述：攻击目标时间 | 生成约束：将当前年月日时分秒对象序列化为一个 64 位二进制值；如果没有任务开始时间，不写XML-->
+  <TimeOnTarget/>
+  <!--FerryThrottle_Aircraft 中文描述：飞机转场油门-->
+  <FerryThrottle_Aircraft/>
+  <!--TankerMinNumber_Airborne 中文描述：加油机数量——在空-->
+  <TankerMinNumber_Airborne/>
+  <!--Deactivation_UnassignUnits 中文描述：是否取消作战单元任务 | 生成约束：False:否；True：是 | 举例：False-->
+  <Deactivation_UnassignUnits/>
+  <!--FlightSize 中文描述：飞机编队规模 | 生成约束：0：无；1：单机；2：2机编队；3：3机编队；4：4机编队；5：6机编队 | 举例：2-->
+  <FlightSize/>
+  <!--FlightFormation 中文描述：飞行编队 | 生成约束：0：散开队形；1：相隔一海里；100：分散队形 | 举例：0-->
+  <FlightFormation/>
+  <!--Category 中文描述：任务类别 | 生成约束：0：任务；1：任务包；2：任务池 | 举例：0-->
+  <Category/>
+  <!--FuelQtyToStartLookingForTanker_Airborne 中文描述：燃油数量多少时寻找加油机——在空-->
+  <FuelQtyToStartLookingForTanker_Airborne/>
+  <!--Formation_Cruise 中文描述：巡航队形 | 生成约束：保留接口-->
+  <Formation_Cruise/>
+  <!--FerryAltitude_Aircraft 中文描述：飞机转场高度-->
+  <FerryAltitude_Aircraft/>
+  <!--TankerMinNumber_Total 中文描述：加油机数量——总共-->
+  <TankerMinNumber_Total/>
+  <!--Behavior 中文描述：转场规则-->
+  <Behavior/>
+  <!--生成约束：有子节点-->
+  <NDH/>
+  <!--UseGroupSizeHardLimit 中文描述：水面舰艇或潜艇数低于编队规模要求，不能出击 （根据基地编组） | 生成约束：布尔值 | 举例：False-->
+  <UseGroupSizeHardLimit/>
+  <!--TankerUsage 中文描述：加油机用法 | 生成约束：0：自动使用；1：任务中使用 | 举例：0-->
+  <TankerUsage/>
+  <!--MinAircraftReq 中文描述：转场任务所需最低飞机数 | 举例：2（批次）= 2 x 编队规模-->
+  <MinAircraftReq/>
+  <!--CheckBox_DeleteMission 中文描述：是否删除任务勾选 | 生成约束：False:否；True：是 | 举例：False-->
+  <CheckBox_DeleteMission/>
+  <!--SideWay 中文描述：预设航线-->
+  <SideWay/>
+  <!--LaunchMissionWithoutTankersInPlace 中文描述：加油机没有在位时允许启动任务 | 生成约束：为FALSE不输出到XML | 举例：True-->
+  <LaunchMissionWithoutTankersInPlace/>
+  <!--UseFlightSizeHardLimit 中文描述：飞机低于编队规模要求不能起飞 | 生成约束：布尔值 | 举例：True-->
+  <UseFlightSizeHardLimit/>
+  <!--CheckBox_OrderRTB 中文描述：是否勾选返航 | 生成约束：False:否；True：是 | 举例：False-->
+  <CheckBox_OrderRTB/>
+  <!--TankerMaxDistance_Airborne 中文描述：空中受油机最大距离寻找加油机——在空-->
+  <TankerMaxDistance_Airborne/>
+  <!--TankerMissionList 中文描述：任务中的加油机列表-->
+  <TankerMissionList/>
+  <!--TankerMinNumber_Station 中文描述：加油机数量——在驻地-->
+  <TankerMinNumber_Station/>
+  <!--MaxReceiversInQueuePerTanker_Airborne 中文描述：加油机允许加油队列长度-->
+  <MaxReceiversInQueuePerTanker_Airborne/>
+  <!--TankerFollowsReceivers 中文描述：加油机是否遵循受油规则 | 生成约束：False：否；True：是 | 举例：False-->
+  <TankerFollowsReceivers/>
+  <!--START 中文描述：任务开始时间 | 生成约束：将当前年月日时分秒对象序列化为一个 64 位二进制值；如果没有，不写XML-->
+  <START/>
+  <!--ID 中文描述：任务ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--END 中文描述：任务结束时间 | 生成约束：将当前年月日时分秒对象序列化为一个 64 位二进制值；如果没有，不写XML-->
+  <END/>
+  <!--Status 中文描述：任务状态 | 生成约束：0：激活状态；1：未激活；2：已完成；如果任务状态是激活，不写XML | 举例：1-->
+  <Status/>
+  <!--Name 中文描述：任务名称 | 举例：预警支援-->
+  <Name/>
+  <!--FerryTerrainFollowing_Aircraft 中文描述：飞机转场地形跟随-->
+  <FerryTerrainFollowing_Aircraft/>
+  <!--SISIH 中文描述：推演方由人扮演时删除该任务 | 生成约束：False:否；True：是 | 举例：False-->
+  <SISIH/>
+</FerryMission>

@@ -1,0 +1,12 @@
+<SideWay xml-id="node_2527_1" parent-id="2526_1" node-type="Node" parent-json-key="unknown" full-json-path="SideWay">
+  <!--ID 中文描述：航线的ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--SideWayType 中文描述：航线类型 | 生成约束：0：作战单元的航线；1：武器的航线 | 举例：0-->
+  <SideWayType/>
+  <!--Name 中文描述：航线名称 | 举例：战斧巡航弹航线-->
+  <Name/>
+  <!--IsShow 中文描述：是否显示 | 生成约束：False：否；True：是 | 举例：False-->
+  <IsShow/>
+  <!--SideWayPointList 中文描述：航路点列表-->
+  <SideWayPointList/>
+</SideWay>

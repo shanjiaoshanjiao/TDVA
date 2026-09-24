@@ -1,0 +1,20 @@
+<SimEvent xml-id="node_2738_0" parent-id="3415_0" node-type="Node" parent-json-key="unknown" full-json-path="SimEvent">
+  <!--Description 中文描述：描述-->
+  <Description/>
+  <!--IsShown 中文描述：是否显示消息 | 生成约束：False：是；True：否 | 举例：False-->
+  <IsShown/>
+  <!--ID 中文描述：动作GUID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12）-->
+  <ID/>
+  <!--IsRepeatable 中文描述：是否重复 | 生成约束：False：是；True：否 | 举例：False-->
+  <IsRepeatable/>
+  <!--IsActive 中文描述：通信链路是否启用 | 生成约束：布尔值，True表示通讯链路启用状态标记；False表示通讯链路关闭状态标记 | 举例：true-->
+  <IsActive/>
+  <!--Triggers 中文描述：触发器 | 生成约束：参照11.1事件中的触发器（Triggers）-->
+  <Triggers/>
+  <!--Probability 中文描述：触发概率 | 生成约束：100：百分百触发 | 举例：100-->
+  <Probability/>
+  <!--Actions 中文描述：动作 | 生成约束：参照11.3事件中的动作（Actions）-->
+  <Actions/>
+  <!--Conditions 中文描述：条件 | 生成约束：参照11.2事件中的条件（Conditions）-->
+  <Conditions/>
+</SimEvent>

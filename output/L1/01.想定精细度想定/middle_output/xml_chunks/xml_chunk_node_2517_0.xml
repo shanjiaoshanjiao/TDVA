@@ -1,0 +1,5 @@
+<EventTrigger_UnitDestroyed xml-id="node_2517_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_UnitDestroyed">
+  <ID>TRIGGER_UNIT_DESTROYED_001</ID>
+  <TargetFilter>All</TargetFilter>
+  <Description>Unit destroyed event trigger</Description>
+</EventTrigger_UnitDestroyed>

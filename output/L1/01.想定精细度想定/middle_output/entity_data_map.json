@@ -1,0 +1,1162 @@
+{
+  "2471": [
+    {
+      "Scenario": {
+        "Title": null,
+        "Description": "全球安全局势复杂多变，红方为获取某关键区域战场态势情报，派遣RQ-1B型“捕食者”无人机执行侦察任务；蓝方为遏制红方侦察行动，保障己方区域信息安全，出动EC-130H型通讯干扰机实施针对性通信干扰与压制，双方围绕侦察与反侦察、干扰与反干扰展开激烈对抗，由此触发系列作战行动。",
+        "StartTime": "20XX年X月X日X时X分X秒-X时X分X秒",
+        "Duration": "120分钟",
+        "_position": [
+          "Scenario"
+        ],
+        "_parent_json_key": null,
+        "_full_path_str": "Scenario"
+      }
+    }
+  ],
+  "5": [],
+  "6": [],
+  "2472": [
+    {
+      "Sides": {
+        "_position": [
+          "Scenario",
+          "Sides"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> Sides"
+      }
+    }
+  ],
+  "2473": [
+    {
+      "Side": {
+        "Name": "红方",
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            0
+          ]
+        ],
+        "_parent_json_key": "Sides",
+        "_full_path_str": "Scenario -> Sides -> Side[0]",
+        "ID": "dde73ace-8676-4a4d-b862-1bd8bad7ca24"
+      }
+    },
+    {
+      "Side": {
+        "Name": "蓝方",
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            1
+          ]
+        ],
+        "_parent_json_key": "Sides",
+        "_full_path_str": "Scenario -> Sides -> Side[1]",
+        "ID": "6e96bf23-2cad-4381-9da6-05795892b9ad"
+      }
+    }
+  ],
+  "2474": [
+    {
+      "NonActiveUnits": {
+        "_position": [
+          "Scenario",
+          "NonActiveUnits"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> NonActiveUnits"
+      }
+    }
+  ],
+  "2475": [
+    {
+      "ActiveUnits": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> ActiveUnits"
+      }
+    }
+  ],
+  "2476": [
+    {
+      "Groups": {
+        "ID": null,
+        "_position": [
+          "Scenario",
+          "Groups"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> Groups"
+      }
+    }
+  ],
+  "2478": [
+    {
+      "EventTriggers": {
+        "EventTrigger_AircraftLanding": null,
+        "EventTrigger_AircraftTakeOff": null,
+        "EventTrigger_Points": null,
+        "EventTrigger_RandomTime": null,
+        "EventTrigger_RegularTime": null,
+        "EventTrigger_ScenLoaded": null,
+        "EventTrigger_Time": null,
+        "EventTrigger_UnitDamaged": null,
+        "EventTrigger_UnitDestroyed": null,
+        "EventTrigger_UnitDetected": null,
+        "EventTrigger_UnitEntersArea": null,
+        "EventTrigger_UnitRemainsInArea": null,
+        "_position": [
+          "Scenario",
+          "EventTriggers"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> EventTriggers"
+      }
+    }
+  ],
+  "2479": [
+    {
+      "EventActions": {
+        "EventAction_ChangeMissionStatus": null,
+        "EventAction_EndScenario": null,
+        "EventAction_LuaScript": null,
+        "EventAction_Message": null,
+        "EventAction_Points": null,
+        "EventAction_TeleportInArea": null,
+        "_position": [
+          "Scenario",
+          "EventActions"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> EventActions"
+      }
+    }
+  ],
+  "2480": [
+    {
+      "EventConditions": {
+        "EventCondition_LuaScript": null,
+        "EventCondition_ScenHasStarted": null,
+        "EventCondition_SidePosture": null,
+        "_position": [
+          "Scenario",
+          "EventConditions"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> EventConditions"
+      }
+    }
+  ],
+  "2482": [],
+  "2483": [
+    {
+      "Aircraft": {
+        "Name": "RQ-1B型“捕食者”无人机",
+        "Lon": "27.38",
+        "Lat": "73.58",
+        "CS": null,
+        "Side": "红方",
+        "AssignedMission": null,
+        "GUID": "hsfw-dataaircraft-000000001718",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ]
+        ],
+        "_parent_json_key": "ActiveUnits",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0]",
+        "ID": "5b3ca1cd-b8ee-4447-ab38-6db7b16cfb2e"
+      }
+    },
+    {
+      "Aircraft": {
+        "Name": "EC-130H型通讯干扰机",
+        "Lon": "38.11",
+        "Lat": "74.52",
+        "CS": null,
+        "Side": "蓝方",
+        "AssignedMission": null,
+        "GUID": "hsfw-dataaircraft-000000003718",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ]
+        ],
+        "_parent_json_key": "ActiveUnits",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1]",
+        "ID": "afb54b32-16f4-41db-8cd2-758b9f6a83e1"
+      }
+    }
+  ],
+  "2484": [],
+  "2485": [],
+  "2486": [],
+  "2487": [],
+  "2488": [],
+  "2489": [],
+  "2490": [],
+  "2492": [
+    {
+      "Sensors": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Sensors"
+        ],
+        "_parent_json_key": "Aircraft[0]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Sensors"
+      }
+    },
+    {
+      "Sensors": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors"
+        ],
+        "_parent_json_key": "Aircraft[1]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors"
+      }
+    }
+  ],
+  "2493": [],
+  "2494": [],
+  "2496": [],
+  "2497": [],
+  "2498": [],
+  "2499": [],
+  "2501": [],
+  "2502": [],
+  "2504": [],
+  "2506": [
+    {
+      "Missions": {
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            0
+          ],
+          "Missions"
+        ],
+        "_parent_json_key": "Side[0]",
+        "_full_path_str": "Scenario -> Sides -> Side[0] -> Missions"
+      }
+    },
+    {
+      "Missions": {
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            1
+          ],
+          "Missions"
+        ],
+        "_parent_json_key": "Side[1]",
+        "_full_path_str": "Scenario -> Sides -> Side[1] -> Missions"
+      }
+    }
+  ],
+  "2507": [],
+  "2508": [],
+  "2510": [],
+  "2512": [],
+  "2513": [],
+  "2514": [],
+  "2515": [],
+  "2516": [],
+  "2517": [],
+  "2518": [],
+  "2519": [],
+  "2521": [],
+  "2522": [],
+  "2523": [],
+  "2526": [],
+  "2527": [],
+  "2530": [],
+  "2531": [],
+  "2532": [],
+  "2534": [],
+  "2535": [],
+  "2537": [],
+  "2538": [],
+  "2541": [],
+  "2543": [],
+  "2545": [],
+  "2546": [],
+  "2548": [],
+  "2549": [],
+  "2550": [
+    {
+      "Sensor": {
+        "Name": "AN/ZPQ-1 TESAR型监视雷达",
+        "GUID": "hsfw-datasensor-00000000002091",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            0
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Sensors -> Sensor[0]",
+        "ID": "a58476cf-10e2-49fb-94f2-c20ace55ea8d"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "AN/AAS-52型多光谱瞄准系统 [激光指示器]",
+        "GUID": "hsfw-datasensor-00000000002824",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            1
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Sensors -> Sensor[1]",
+        "ID": "a032647f-59ec-4ad2-8282-7c38e1e13ec5"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "AN/AAS-52型多光谱瞄准系统[红外/光电]",
+        "GUID": "hsfw-datasensor-00000000002825",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            2
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Sensors -> Sensor[2]",
+        "ID": "77116762-e741-4709-ad12-ac1d405df189"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "AN/ALQ-175防御型电子对抗系统",
+        "GUID": "hsfw-datasensor-00000000005728",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            0
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[0]",
+        "ID": "f4cb507a-e66f-4482-ac9c-bccd8e6f8fac"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "通用红外行扫描仪 (IRLS)",
+        "GUID": "hsfw-datasensor-00000000000892",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            1
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[1]",
+        "ID": "e7a8a4f4-6ba9-4741-ade2-c3397cf11b88"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "AN/ALQ-173(V)型电子对抗系统",
+        "GUID": "hsfw-datasensor-00000000005727",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            2
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[2]",
+        "ID": "b8b0f7e7-042b-4ba5-8365-290162547ca3"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "AN/ALR-63型电子支援系统",
+        "GUID": "hsfw-datasensor-00000000005729",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            3
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[3]",
+        "ID": "ac8809f5-fc15-47ce-a9af-fc4111286d8b"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "AN/APN-59型导航雷达",
+        "GUID": "hsfw-datasensor-00000000002678",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            4
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[4]",
+        "ID": "6867324f-0907-4bae-8a5b-e9031b04a57c"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "通用前视红外探测系统",
+        "GUID": "hsfw-datasensor-00000000002928",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            5
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[5]",
+        "ID": "9173e639-1ab9-4c6e-870f-8897539cac40"
+      }
+    },
+    {
+      "Sensor": {
+        "Name": "通用通信干扰机 [高级]",
+        "GUID": "hsfw-datasensor-00000000005259",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Sensors",
+          [
+            "Sensor",
+            6
+          ]
+        ],
+        "_parent_json_key": "Sensors",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[6]",
+        "ID": "2e1430d4-91e9-4e91-a36e-9d70ea2f0ff4"
+      }
+    }
+  ],
+  "2551": [],
+  "2552": [],
+  "2553": [],
+  "2554": [],
+  "2555": [],
+  "2556": [],
+  "2557": [],
+  "2558": [],
+  "2559": [],
+  "2561": [],
+  "2562": [],
+  "2563": [],
+  "2564": [],
+  "2565": [],
+  "2566": [],
+  "2567": [
+    {
+      "Loadout": {
+        "Name": "(转场)",
+        "GUID": "hsfw-dataloadout-0000000008863",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Loadout",
+          [
+            "Loadout",
+            0
+          ]
+        ],
+        "_parent_json_key": "Loadout",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Loadout -> Loadout[0]",
+        "ID": "c1270930-2de7-4ed0-833c-f9248785c020"
+      }
+    },
+    {
+      "Loadout": {
+        "Name": "(转场)",
+        "GUID": "hsfw-dataloadout-0000000014470",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Loadout",
+          [
+            "Loadout",
+            0
+          ]
+        ],
+        "_parent_json_key": "Loadout",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Loadout -> Loadout[0]",
+        "ID": "483907aa-d08c-49d2-ae59-5d0cc557f37c"
+      }
+    }
+  ],
+  "2569": [],
+  "2570": [],
+  "2571": [],
+  "2572": [],
+  "2574": [],
+  "2575": [],
+  "2576": [],
+  "2579": [],
+  "2580": [],
+  "2581": [],
+  "2582": [],
+  "2584": [],
+  "2585": [],
+  "2589": [],
+  "2590": [
+    {
+      "Loadout": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Loadout"
+        ],
+        "_parent_json_key": "Aircraft[0]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Loadout",
+        "ID": "a69b97d4-9213-478b-973b-98360bbe7f7a"
+      }
+    },
+    {
+      "Loadout": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Loadout"
+        ],
+        "_parent_json_key": "Aircraft[1]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Loadout",
+        "ID": "f4d66a2c-128b-444a-ad9c-1d62c17bbcb5"
+      }
+    }
+  ],
+  "2591": [],
+  "2592": [],
+  "2593": [],
+  "2594": [],
+  "2595": [],
+  "2596": [],
+  "2599": [],
+  "2642": [],
+  "2648": [
+    {
+      "CD": {
+        "Name": "UHF/VHF无线电[不安全]",
+        "GUID": "hsfw-datacomm-0000000000000020",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Comms",
+          [
+            "CD",
+            0
+          ]
+        ],
+        "_parent_json_key": "Comms",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Comms -> CD[0]",
+        "ID": "db647270-4a78-43fe-9f31-72a23ebc93e3"
+      }
+    },
+    {
+      "CD": {
+        "Name": "军事战术中继卫星通讯",
+        "GUID": "hsfw-datacomm-0000000000000222",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Comms",
+          [
+            "CD",
+            1
+          ]
+        ],
+        "_parent_json_key": "Comms",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Comms -> CD[1]",
+        "ID": "b71e63da-1563-41eb-9659-2a48cca1c25c"
+      }
+    },
+    {
+      "CD": {
+        "Name": "VHF无线电[不安全]",
+        "GUID": "hsfw-datacomm-0000000000000194",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Comms",
+          [
+            "CD",
+            0
+          ]
+        ],
+        "_parent_json_key": "Comms",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Comms -> CD[0]",
+        "ID": "cccdbd90-a0e5-40ea-97cf-65317950cf26"
+      }
+    },
+    {
+      "CD": {
+        "Name": "HF无线电[不安全]",
+        "GUID": "hsfw-datacomm-0000000000000238",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Comms",
+          [
+            "CD",
+            1
+          ]
+        ],
+        "_parent_json_key": "Comms",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Comms -> CD[1]",
+        "ID": "f8373a28-f0e1-4063-98ec-eb4dbbb0fd81"
+      }
+    }
+  ],
+  "2738": [],
+  "2747": [],
+  "2760": [],
+  "2829": [
+    {
+      "Engine": {
+        "Name": "1x Rotax 912 UL型航空发动机",
+        "GUID": "hsfw-datapropulsion-0000000915",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Propulsion",
+          [
+            "Engine",
+            0
+          ]
+        ],
+        "_parent_json_key": "Propulsion",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Propulsion -> Engine[0]",
+        "ID": "880616ea-bd88-48a4-ba55-e5f5c19fd591"
+      }
+    },
+    {
+      "Engine": {
+        "Name": "4x T56-A-15型涡轮螺旋桨发动机",
+        "GUID": "hsfw-datapropulsion-0000000039",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Propulsion",
+          [
+            "Engine",
+            0
+          ]
+        ],
+        "_parent_json_key": "Propulsion",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Propulsion -> Engine[0]",
+        "ID": "57dddc24-8863-42db-8bc7-19cd46768e90"
+      }
+    }
+  ],
+  "2893": [],
+  "2916": [],
+  "2928": [],
+  "2939": [],
+  "2993": [],
+  "2998": [],
+  "3042": [],
+  "3130": [],
+  "3135": [],
+  "3139": [
+    {
+      "WeatherProfile": {
+        "Temp": "15",
+        "Pressure": "1013.25",
+        "RL": "86.17",
+        "_position": [
+          "Scenario",
+          "GlobalWeather",
+          "WeatherProfile"
+        ],
+        "_parent_json_key": "GlobalWeather",
+        "_full_path_str": "Scenario -> GlobalWeather -> WeatherProfile"
+      }
+    }
+  ],
+  "3168": [
+    {
+      "ORBATItemMission": {
+        "Name": "依托RQ-1B型“捕食者”无人机，对指定区域实施全天候、高精度战场侦察，获取蓝方部署及动态情报",
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            0
+          ],
+          "ORBATMission",
+          [
+            "ORBATItemMission",
+            0
+          ]
+        ],
+        "_parent_json_key": "ORBATMission",
+        "_full_path_str": "Scenario -> Sides -> Side[0] -> ORBATMission -> ORBATItemMission[0]"
+      }
+    },
+    {
+      "ORBATItemMission": {
+        "Name": "运用EC-130H型通讯干扰机，对红方RQ-1B型“捕食者”无人机通信频段实施精准干扰，切断其侦察数据传输链路",
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            1
+          ],
+          "ORBATMission",
+          [
+            "ORBATItemMission",
+            0
+          ]
+        ],
+        "_parent_json_key": "ORBATMission",
+        "_full_path_str": "Scenario -> Sides -> Side[1] -> ORBATMission -> ORBATItemMission[0]"
+      }
+    }
+  ],
+  "3178": [],
+  "3199": [],
+  "3209": [
+    {
+      "FuelRec": {
+        "Name": null,
+        "GUID": "hsfw-datafuel-0000000000000595",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Fuel",
+          [
+            "FuelRec",
+            0
+          ]
+        ],
+        "_parent_json_key": "Fuel",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Fuel -> FuelRec[0]",
+        "ID": "05d04533-2efb-41f7-9a8b-abeb83c3b833"
+      }
+    },
+    {
+      "FuelRec": {
+        "Name": null,
+        "GUID": "hsfw-datafuel-0000000000001322",
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Fuel",
+          [
+            "FuelRec",
+            0
+          ]
+        ],
+        "_parent_json_key": "Fuel",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Fuel -> FuelRec[0]",
+        "ID": "83d01e85-4639-477d-a4e5-9a1f2ec046ef"
+      }
+    }
+  ],
+  "3224": [
+    {
+      "ORBATItem": {
+        "Name": "RQ-1B型“捕食者”无人机",
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            0
+          ],
+          "ORBAT",
+          [
+            "ORBATItem",
+            0
+          ]
+        ],
+        "_parent_json_key": "ORBAT",
+        "_full_path_str": "Scenario -> Sides -> Side[0] -> ORBAT -> ORBATItem[0]"
+      }
+    },
+    {
+      "ORBATItem": {
+        "Name": "EC-130H型通讯干扰机",
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            1
+          ],
+          "ORBAT",
+          [
+            "ORBATItem",
+            0
+          ]
+        ],
+        "_parent_json_key": "ORBAT",
+        "_full_path_str": "Scenario -> Sides -> Side[1] -> ORBAT -> ORBATItem[0]"
+      }
+    }
+  ],
+  "3319": [],
+  "3333": [],
+  "3401": [],
+  "3408": [
+    {
+      "Fuel": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Fuel"
+        ],
+        "_parent_json_key": "Aircraft[0]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Fuel"
+      }
+    },
+    {
+      "Fuel": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Fuel"
+        ],
+        "_parent_json_key": "Aircraft[1]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Fuel"
+      }
+    }
+  ],
+  "3409": [],
+  "3410": [],
+  "3411": [],
+  "3412": [
+    {
+      "Comms": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Comms"
+        ],
+        "_parent_json_key": "Aircraft[0]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Comms"
+      }
+    },
+    {
+      "Comms": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Comms"
+        ],
+        "_parent_json_key": "Aircraft[1]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Comms"
+      }
+    }
+  ],
+  "3413": [],
+  "3414": [],
+  "3415": [
+    {
+      "SimEvents": {
+        "Triggers": null,
+        "Conditions": null,
+        "Actions": null,
+        "_position": [
+          "Scenario",
+          "SimEvents"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> SimEvents"
+      }
+    }
+  ],
+  "3416": [],
+  "3417": [],
+  "3418": [
+    {
+      "Propulsion": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            0
+          ],
+          "Propulsion"
+        ],
+        "_parent_json_key": "Aircraft[0]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Propulsion"
+      }
+    },
+    {
+      "Propulsion": {
+        "_position": [
+          "Scenario",
+          "ActiveUnits",
+          [
+            "Aircraft",
+            1
+          ],
+          "Propulsion"
+        ],
+        "_parent_json_key": "Aircraft[1]",
+        "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Propulsion"
+      }
+    }
+  ],
+  "3419": [],
+  "3420": [],
+  "3422": [],
+  "3423": [
+    {
+      "ORBATMission": {
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            0
+          ],
+          "ORBATMission"
+        ],
+        "_parent_json_key": "Side[0]",
+        "_full_path_str": "Scenario -> Sides -> Side[0] -> ORBATMission"
+      }
+    },
+    {
+      "ORBATMission": {
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            1
+          ],
+          "ORBATMission"
+        ],
+        "_parent_json_key": "Side[1]",
+        "_full_path_str": "Scenario -> Sides -> Side[1] -> ORBATMission"
+      }
+    }
+  ],
+  "3424": [],
+  "3427": [],
+  "3428": [],
+  "3429": [],
+  "3430": [],
+  "3431": [],
+  "3432": [],
+  "3433": [],
+  "3434": [],
+  "3435": [],
+  "3436": [],
+  "3437": [
+    {
+      "GlobalWeather": {
+        "_position": [
+          "Scenario",
+          "GlobalWeather"
+        ],
+        "_parent_json_key": "Scenario",
+        "_full_path_str": "Scenario -> GlobalWeather"
+      }
+    }
+  ],
+  "3438": [
+    {
+      "ORBAT": {
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            0
+          ],
+          "ORBAT"
+        ],
+        "_parent_json_key": "Side[0]",
+        "_full_path_str": "Scenario -> Sides -> Side[0] -> ORBAT"
+      }
+    },
+    {
+      "ORBAT": {
+        "_position": [
+          "Scenario",
+          "Sides",
+          [
+            "Side",
+            1
+          ],
+          "ORBAT"
+        ],
+        "_parent_json_key": "Side[1]",
+        "_full_path_str": "Scenario -> Sides -> Side[1] -> ORBAT"
+      }
+    }
+  ],
+  "3439": []
+}

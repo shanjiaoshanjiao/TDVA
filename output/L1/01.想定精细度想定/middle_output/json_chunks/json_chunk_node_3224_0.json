@@ -1,0 +1,30 @@
+{
+  "node_id": "node_3224_0",
+  "parent_node_id": [
+    "3438_0"
+  ],
+  "node_type": "Node",
+  "data": {
+    "ORBATItem": {
+      "Name": "RQ-1B型“捕食者”无人机",
+      "_position": [
+        "Scenario",
+        "Sides",
+        [
+          "Side",
+          0
+        ],
+        "ORBAT",
+        [
+          "ORBATItem",
+          0
+        ]
+      ],
+      "_parent_json_key": "ORBAT",
+      "_full_path_str": "Scenario -> Sides -> Side[0] -> ORBAT -> ORBATItem[0]"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

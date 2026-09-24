@@ -1,0 +1,4 @@
+<Contacts xml-id="node_2493_0" parent-id="2513_0,2498_0,2487_0,2485_0,2496_0,2483_0" node-type="Node" parent-json-key="unknown" full-json-path="Contacts">
+  <!--ObE 中文描述：是否遵循电磁管控 | 生成约束：False：否；True：是-->
+  <ObE/>
+</Contacts>

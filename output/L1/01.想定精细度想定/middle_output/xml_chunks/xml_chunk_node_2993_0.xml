@@ -1,0 +1,12 @@
+<Cargo xml-id="node_2993_0" parent-id="3416_0" node-type="Node" parent-json-key="unknown" full-json-path="Cargo">
+  <!--ID 中文描述：货物的GUID-->
+  <ID/>
+  <!--Name 中文描述：货物名称-->
+  <Name/>
+  <!--CurrentType 中文描述：货物类型 | 生成约束：0：；1：；2： | 举例：1.0-->
+  <CurrentType/>
+  <!--Status 中文描述：货物状态 | 生成约束：0：正常工作；1：受到毁伤；2：已被摧毁；如果是正常工作，不写入XML-->
+  <Status/>
+  <!--DamageSeverity 中文描述：毁伤程度 | 生成约束：0：轻度；1：中度；2：重度；如果是轻度毁伤，不写入XML中 | 举例：0-->
+  <DamageSeverity/>
+</Cargo>

@@ -1,0 +1,122 @@
+<WPoint xml-id="node_2572_1" parent-id="2548_1" node-type="Node" parent-json-key="unknown" full-json-path="WPoint">
+  <!--Leg_TotalTime 中文描述：飞完所有航线段所需时间-->
+  <Leg_TotalTime/>
+  <!--Leg_Time_Straight 中文描述：本航段直线段飞行时间-->
+  <Leg_Time_Straight/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+  <!--DAO 中文描述：是否选择了手动覆盖期望高度 | 生成约束：False：否；True：是 | 举例：True-->
+  <DAO/>
+  <!--DesiredAltitude_TerrainFollowing 中文描述：航路点地形跟随期望高度 | 生成约束：0：作战单元的航线；1：武器的航线 | 举例：0-->
+  <DesiredAltitude_TerrainFollowing/>
+  <!--TankerMinNumber_Airborne 中文描述：加油机数量——在空-->
+  <TankerMinNumber_Airborne/>
+  <!--Lat 中文描述：航路点纬度-->
+  <Lat/>
+  <!--Leg_FuelRemaining_LeadElementWingman：无辅助信息-->
+  <Leg_FuelRemaining_LeadElementWingman/>
+  <!--Leg_FuelRemaining_ThirdElementWingman：无辅助信息-->
+  <Leg_FuelRemaining_ThirdElementWingman/>
+  <!--Leg_Time 中文描述：飞完本航线段所需时间： | 生成约束：直线飞行时间和转弯时间-->
+  <Leg_Time/>
+  <!--TurnRate 中文描述：转弯速率 | 生成约束：0：标准 转弯率为3；1：一半：转弯率为1.5；2：一倍：转弯率为6；3：转弯弧度为70度；4：转弯弧度为75度 | 举例：0-->
+  <TurnRate/>
+  <!--DSO 中文描述：是否手动覆盖期望速度 | 生成约束：False：否；True：是 | 举例：true-->
+  <DSO/>
+  <!--FlightFormation 中文描述：飞行编队 | 生成约束：0：散开队形；1：相隔一海里；100：分散队形 | 举例：0-->
+  <FlightFormation/>
+  <!--WP_SecondElementWingman：无辅助信息-->
+  <WP_SecondElementWingman/>
+  <!--FlightplanPointsList 中文描述：飞行计划点列表-->
+  <FlightplanPointsList/>
+  <!--Name 中文描述：航路点名称-->
+  <Name/>
+  <!--SpeedFixed 中文描述：固定速度 | 生成约束：0：无；1：const_1；2：const_2；3：const_3 | 举例：1-->
+  <SpeedFixed/>
+  <!--WP_SecondElement：无辅助信息-->
+  <WP_SecondElement/>
+  <!--Leg_FuelRemaining_SecondElementWingman：无辅助信息-->
+  <Leg_FuelRemaining_SecondElementWingman/>
+  <!--TerrainFollowing 中文描述：是否采用地形跟随 | 生成约束：False：否；True：是 | 举例：true-->
+  <TerrainFollowing/>
+  <!--ID 中文描述：航路点的ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--Doctrine 中文描述：作战条令-->
+  <Doctrine/>
+  <!--Leg_FuelRemaining 中文描述：飞完本航线段的剩余任务油量-->
+  <Leg_FuelRemaining/>
+  <!--Lon 中文描述：航路点经度 | 举例：战斧巡航弹航线-->
+  <Lon/>
+  <!--Time_Zulu 中文描述：到达时间 | 生成约束：将年月日时分秒转化为64 位二进制值-->
+  <Time_Zulu/>
+  <!--WP_ThirdElementWingman：无辅助信息-->
+  <WP_ThirdElementWingman/>
+  <!--DesiredSpeed 中文描述：航路点期望速度-->
+  <DesiredSpeed/>
+  <!--ThrottlePreset 中文描述：预设油门 | 生成约束：0：完全停止；1：低速；2：巡航；3：军用；4：加力；5：滑行 | 举例：1-->
+  <ThrottlePreset/>
+  <!--TimeOfDay 中文描述：时段 | 生成约束：0：白天；1：黄昏；2：晚上 | 举例：0-->
+  <TimeOfDay/>
+  <!--DesiredAltitude 中文描述：航路点期望高度 | 生成约束：False：不显示；True：显示 | 举例：True-->
+  <DesiredAltitude/>
+  <!--TankerMinNumber_Station 中文描述：加油机数量——在驻地-->
+  <TankerMinNumber_Station/>
+  <!--TankerMissionList 中文描述：加油任务列表-->
+  <TankerMissionList/>
+  <!--MaxReceiversInQueuePerTanker_Airborne 中文描述：加油机允许加油队列长度-->
+  <MaxReceiversInQueuePerTanker_Airborne/>
+  <!--TankerMaxDistance_Airborne 中文描述：空中受油机最大距离寻找加油机——在空-->
+  <TankerMaxDistance_Airborne/>
+  <!--Hold_Time 中文描述：航路点上等待飞行编队集结所需的徘徊时间-->
+  <Hold_Time/>
+  <!--Leg_TotalDistance_SecondElementWingman：无辅助信息-->
+  <Leg_TotalDistance_SecondElementWingman/>
+  <!--Creator 中文描述：路径点创建类型 | 生成约束：0：activeunit导航器创建时使用此；1：武器导航器；2：const_2；3：const_3 | 举例：1-->
+  <Creator/>
+  <!--LaunchMissionWithoutTankersInPlace 中文描述：加油机没有在位时允许启动任务 | 生成约束：为FALSE不输出到XML | 举例：True-->
+  <LaunchMissionWithoutTankersInPlace/>
+  <!--Leg_TotalDistance_ThirdElement：无辅助信息-->
+  <Leg_TotalDistance_ThirdElement/>
+  <!--Leg_Distance 中文描述：距离上一个路径点的航线段距离-->
+  <Leg_Distance/>
+  <!--DepthPreset 中文描述：预设深度 | 生成约束：0：无；1：20米；2：40米；3：温跃层上方10米；4：温跃层下方10米；5：最大深度；6：水面0米-->
+  <DepthPreset/>
+  <!--Leg_FuelRequired 中文描述：飞完本航线段所需油量-->
+  <Leg_FuelRequired/>
+  <!--TankerUsage 中文描述：油箱使用规则 | 生成约束：0：自动使用；1：任务中使用 | 举例：0-->
+  <TankerUsage/>
+  <!--IME 中文描述：是否可以手动编辑 | 生成约束：True：是 | 举例：true-->
+  <IME/>
+  <!--AltitudePreset 中文描述：预设高度 | 生成约束：0：无；1：最小高度；2：25.4米；3：50.8米；3：304.8米；4：635米；5：914.4米；6：最大高度 | 举例：6-->
+  <AltitudePreset/>
+  <!--Leg_FuelRemaining_ThirdElement：无辅助信息-->
+  <Leg_FuelRemaining_ThirdElement/>
+  <!--Leg_TotalDistance_LeadElementWingman：无辅助信息-->
+  <Leg_TotalDistance_LeadElementWingman/>
+  <!--Leg_TotalDistance 中文描述：所有航段的总距离-->
+  <Leg_TotalDistance/>
+  <!--Leg_TotalDistance_SecondElement：无辅助信息-->
+  <Leg_TotalDistance_SecondElement/>
+  <!--TimeFixed 中文描述：固定时间 | 生成约束：0：无；1：const_1；2：const_2；3：const_3 | 举例：1-->
+  <TimeFixed/>
+  <!--WP_LeadElementWingman：无辅助信息-->
+  <WP_LeadElementWingman/>
+  <!--Leg_FuelRemaining_SecondElement：无辅助信息-->
+  <Leg_FuelRemaining_SecondElement/>
+  <!--Leg_TotalDistance_ThirdElementWingman：无辅助信息-->
+  <Leg_TotalDistance_ThirdElementWingman/>
+  <!--Time_Local 中文描述：当地时间——到达 | 生成约束：将年月日时分秒转化为64 位二进制值-->
+  <Time_Local/>
+  <!--TankerMinNumber_Total 中文描述：加油机数量——总共-->
+  <TankerMinNumber_Total/>
+  <!--Leg_Time_Turn 中文描述：本航段转弯段飞行时间-->
+  <Leg_Time_Turn/>
+  <!--FuelQtyToStartLookingForTanker_Airborne 中文描述：燃油数量多少时寻找加油机——在空-->
+  <FuelQtyToStartLookingForTanker_Airborne/>
+  <!--Type 中文描述：航路点型号 | 生成约束：0：手动绘制的航路点；1：巡逻站；2：武器终点；3：非惯性制导导航定位航路点；4：寻路点：搜索到的、避开禁航区的路径点；5：集结点；6：转折点；7：初始点；8：分批；9：编队；10：目标；11：降落集合编组点；12：进入突击区；13：退出突击区；14：加油；15：起飞；16：编列；17：武器发射；18：降落；19：武器分配目标；20：航迹点；21：GIS Road Finder；22：预设航线-->
+  <Type/>
+  <!--WP_ThirdElement：无辅助信息-->
+  <WP_ThirdElement/>
+  <!--Category 中文描述：航路点类型 | 生成约束：0：标会路径点，导航器创建时使用此；1：代表虚构的，或者程序内部使用的；3：GPS干扰生成的航路点-->
+  <Category/>
+</WPoint>

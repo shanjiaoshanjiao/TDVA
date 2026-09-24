@@ -1,0 +1,33 @@
+{
+  "node_id": "node_2648_3",
+  "parent_node_id": [
+    "3422_3",
+    "3412_3"
+  ],
+  "node_type": "Node",
+  "data": {
+    "CD": {
+      "Name": "HF无线电[不安全]",
+      "GUID": "hsfw-datacomm-0000000000000238",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          1
+        ],
+        "Comms",
+        [
+          "CD",
+          1
+        ]
+      ],
+      "_parent_json_key": "Comms",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Comms -> CD[1]",
+      "ID": "f8373a28-f0e1-4063-98ec-eb4dbbb0fd81"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

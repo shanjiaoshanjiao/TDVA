@@ -1,0 +1,12 @@
+<Engine xml-id="node_2829_0" parent-id="3418_0" node-type="Node" parent-json-key="Propulsion" full-json-path="Scenario-&amp;gt;ActiveUnits-&amp;gt;Aircraft[0]-&amp;gt;Propulsion-&amp;gt;Engine[0]">
+  <!--ID 中文描述：推进系统ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--Name 中文描述：推进系统名称 | 举例：火箭推进系统-->
+  <Name/>
+  <!--Status 中文描述：推进系统状态 | 生成约束：0：正常工作；1：受到毁伤；2：已被摧毁 | 举例：0-->
+  <Status/>
+  <!--DBGUID 中文描述：推进系统数据库ID-->
+  <DBGUID/>
+  <!--DamageSeverity 中文描述：毁伤程度 | 生成约束：0：轻度；1：中度；2：重度；如果是轻度毁伤，不写入XML中 | 举例：0-->
+  <DamageSeverity/>
+</Engine>

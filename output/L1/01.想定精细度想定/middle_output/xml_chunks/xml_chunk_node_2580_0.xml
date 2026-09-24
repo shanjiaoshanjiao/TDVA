@@ -1,0 +1,8 @@
+<EventCondition_ScenHasStarted xml-id="node_2580_0" parent-id="2480_0" node-type="Node" parent-json-key="unknown" full-json-path="EventCondition_ScenHasStarted">
+  <!--ID 中文描述：动作GUID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12）-->
+  <ID/>
+  <!--NOT 中文描述：取反 | 生成约束：如果没有，不写入XML | 举例：1.0-->
+  <NOT/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+</EventCondition_ScenHasStarted>

@@ -1,0 +1,24 @@
+<AI xml-id="node_2501_1" parent-id="2513_1,2498_1,2487_1,2485_1,2496_1,2483_1" node-type="Node" parent-json-key="unknown" full-json-path="AI">
+  <!--PrimaryTarget_LastKnown_Lon 中文描述：主要目标最新探测的经度位置 | 生成约束：如果等于0，不写入XML | 举例：125.0-->
+  <PrimaryTarget_LastKnown_Lon/>
+  <!--HPos 中文描述：是否保持阵位 | 生成约束：False：不保持阵位；True: 保持阵位 | 举例：False-->
+  <HPos/>
+  <!--PrimaryTarget_Type 中文描述：主要目标类型 | 生成约束：0：空中目标；1：导弹；3：水面舰艇；4：潜艇；5：未确定的海军；6：瞄准点；7：轨道目标；8：固定设施；9：移动设施；10：鱼雷；11：水雷；12：爆炸；13：不确定；14：空中诱饵；15：水面诱饵；16：地面诱饵；17：水下诱饵；18：声纳浮标；19：军事设施；20：空军基地；21：海军基地；22：移动编组；23：激活点；如果没有，不写入XML | 举例：3-->
+  <PrimaryTarget_Type/>
+  <!--PTOE 中文描述：主要目标是否被替换 | 生成约束：False：没有被替换；True: 被替换 | 举例：False-->
+  <PTOE/>
+  <!--PrimaryThreat 中文描述：主要威胁目标GUID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <PrimaryThreat/>
+  <!--TTNPTE 中文描述：距离下次瞄准主目标剩余时间 | 生成约束：整数 | 举例：5-->
+  <TTNPTE/>
+  <!--IE 中文描述：是否是护航单元 | 生成约束：True: 是护航；如果不是护航，不写入XML | 举例：True-->
+  <IE/>
+  <!--PrimaryTarget_LastKnown_Lat 中文描述：主要目标最新探测的纬度位置 | 生成约束：如果等于0，不写入XML | 举例：32.0-->
+  <PrimaryTarget_LastKnown_Lat/>
+  <!--PrimaryTarget_LastKnown_Alt 中文描述：主要目标最新探测的高度位置 | 生成约束：如果等于0，不写入XML | 举例：5000.0-->
+  <PrimaryTarget_LastKnown_Alt/>
+  <!--FCLIO 中文描述：飞机转场是否超出航程 | 生成约束：False：没有超出航程；True: 超出航程 | 举例：False-->
+  <FCLIO/>
+  <!--PrimaryTarget 中文描述：主要目标的GUID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <PrimaryTarget/>
+</AI>

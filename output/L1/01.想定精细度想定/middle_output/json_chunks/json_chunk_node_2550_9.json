@@ -1,0 +1,40 @@
+{
+  "node_id": "node_2550_9",
+  "parent_node_id": [
+    "2492_9",
+    "2519_9"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Sensor": {
+      "Name": "通用通信干扰机 [高级]",
+      "GUID": "hsfw-datasensor-00000000005259",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          1
+        ],
+        "Sensors",
+        [
+          "Sensor",
+          6
+        ]
+      ],
+      "_parent_json_key": "Sensors",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Sensors -> Sensor[6]",
+      "ID": "2e1430d4-91e9-4e91-a36e-9d70ea2f0ff4"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_6_9",
+    "node_5_9",
+    "node_2591_9",
+    "node_2589_9",
+    "node_2562_9",
+    "node_2551_9"
+  ]
+}

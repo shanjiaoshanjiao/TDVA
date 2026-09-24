@@ -1,0 +1,22 @@
+<WeatherProfile xml-id="node_3139_0" parent-id="3437_0" node-type="Node" parent-json-key="GlobalWeather" full-json-path="Scenario-&amp;gt;GlobalWeather-&amp;gt;WeatherProfile">
+  <!--DN 中文描述：气温变化因子DeltN | 举例：39.0-->
+  <DN/>
+  <!--Pressure 中文描述：气压-->
+  <Pressure/>
+  <!--RFR 中文描述：降雨率-->
+  <RFR/>
+  <!--GRC：无辅助信息-->
+  <GRC/>
+  <!--RL 中文描述：降雨等级-->
+  <RL/>
+  <!--SS 中文描述：海况-->
+  <SS/>
+  <!--SDH：无辅助信息-->
+  <SDH/>
+  <!--FUR 中文描述：天空云量-->
+  <FUR/>
+  <!--EDH：无辅助信息-->
+  <EDH/>
+  <!--Temp 中文描述：平均温度-->
+  <Temp/>
+</WeatherProfile>

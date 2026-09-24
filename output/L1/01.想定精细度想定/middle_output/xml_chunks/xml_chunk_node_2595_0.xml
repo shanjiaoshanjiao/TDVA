@@ -1,0 +1,8 @@
+<EventTrigger_Time xml-id="node_2595_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_Time">
+  <!--Time 中文描述：时间-->
+  <Time/>
+  <!--ID 中文描述：触发器ID-->
+  <ID/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+</EventTrigger_Time>

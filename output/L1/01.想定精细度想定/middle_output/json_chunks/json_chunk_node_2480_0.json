@@ -1,0 +1,27 @@
+{
+  "node_id": "node_2480_0",
+  "parent_node_id": [
+    "node_root"
+  ],
+  "node_type": "Node",
+  "data": {
+    "EventConditions": {
+      "EventCondition_LuaScript": null,
+      "EventCondition_ScenHasStarted": null,
+      "EventCondition_SidePosture": null,
+      "_position": [
+        "Scenario",
+        "EventConditions"
+      ],
+      "_parent_json_key": "Scenario",
+      "_full_path_str": "Scenario -> EventConditions"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_2580_0",
+    "node_2569_0",
+    "node_2510_0"
+  ]
+}

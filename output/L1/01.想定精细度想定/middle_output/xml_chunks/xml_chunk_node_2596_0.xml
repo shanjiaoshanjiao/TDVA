@@ -1,0 +1,14 @@
+<TargetFilter xml-id="node_2596_0" parent-id="2532_0" node-type="Node" parent-json-key="unknown" full-json-path="TargetFilter">
+  <!--TargetSide 中文描述：目标推演方GUID-->
+  <TargetSide/>
+  <!--ID 中文描述：目标ID-->
+  <ID/>
+  <!--SpecificUnit 中文描述：指定单元 | 生成约束：参照5活动单元（ActiveUnits）-->
+  <SpecificUnit/>
+  <!--TargetSubType 中文描述：目标子类型 | 生成约束：False：是；True：否 | 举例：False-->
+  <TargetSubType/>
+  <!--SpecificUnitClass 中文描述：指定单元型号数据库ID-->
+  <SpecificUnitClass/>
+  <!--TargetType 中文描述：目标类型 | 生成约束：0：未知；1：飞机；2：船只；3：潜艇；4：设施；5：瞄准点；6：武器；7：卫星 | 举例：1-->
+  <TargetType/>
+</TargetFilter>

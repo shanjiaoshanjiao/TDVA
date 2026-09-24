@@ -1,0 +1,32 @@
+<UnguidedWeapon xml-id="node_2893_0" parent-id="3414_0" node-type="Node" parent-json-key="unknown" full-json-path="UnguidedWeapon">
+  <!--Target 中文描述：目标的GUID-->
+  <Target/>
+  <!--Side 中文描述：武器所在推演方-->
+  <Side/>
+  <!--FiringParent 中文描述：开火平台GUID-->
+  <FiringParent/>
+  <!--TimeToDetonate 中文描述：引爆时间-->
+  <TimeToDetonate/>
+  <!--CH 中文描述：当前朝向-->
+  <CH/>
+  <!--ID 中文描述：非制导武器ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--CEP_Land 中文描述：对陆圆概率误差-->
+  <CEP_Land/>
+  <!--TimeToLive 中文描述：生存时间-->
+  <TimeToLive/>
+  <!--CEP_Surface 中文描述：对舰圆概率误差-->
+  <CEP_Surface/>
+  <!--Name 中文描述：非制导武器名称-->
+  <Name/>
+  <!--DBGUID 中文描述：数据库ID-->
+  <DBGUID/>
+  <!--CA 中文描述：当前海拔高度-->
+  <CA/>
+  <!--CS 中文描述：当前速度 | 生成约束：整数 | 举例：300-->
+  <CS/>
+  <!--Lat 中文描述：纬度 | 生成约束：浮点数 | 举例：33.0-->
+  <Lat/>
+  <!--Lon 中文描述：经度 | 生成约束：浮点数 | 举例：120.0-->
+  <Lon/>
+</UnguidedWeapon>

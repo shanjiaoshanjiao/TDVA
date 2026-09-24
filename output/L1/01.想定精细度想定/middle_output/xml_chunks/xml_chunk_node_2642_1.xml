@@ -1,0 +1,10 @@
+<DockFacility xml-id="node_2642_1" parent-id="3429_1" node-type="Node" parent-json-key="unknown" full-json-path="DockFacility">
+  <!--ID 中文描述：停靠设施ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--DBGUID 中文描述：停靠设施数据库GUID-->
+  <DBGUID/>
+  <!--Status 中文描述：停靠设施状态 | 生成约束：0：正常工作；1：受到毁伤；2：已被摧毁-->
+  <Status/>
+  <!--DamageSeverity 中文描述：停靠设施毁伤程度 | 生成约束：0：轻度；1：中度；2：重度-->
+  <DamageSeverity/>
+</DockFacility>

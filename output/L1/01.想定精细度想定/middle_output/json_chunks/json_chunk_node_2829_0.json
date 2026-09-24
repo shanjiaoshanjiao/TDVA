@@ -1,0 +1,32 @@
+{
+  "node_id": "node_2829_0",
+  "parent_node_id": [
+    "3418_0"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Engine": {
+      "Name": "1x Rotax 912 UL型航空发动机",
+      "GUID": "hsfw-datapropulsion-0000000915",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          0
+        ],
+        "Propulsion",
+        [
+          "Engine",
+          0
+        ]
+      ],
+      "_parent_json_key": "Propulsion",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Propulsion -> Engine[0]",
+      "ID": "880616ea-bd88-48a4-ba55-e5f5c19fd591"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

@@ -1,0 +1,16 @@
+<RangeSymbols xml-id="node_2484_0" parent-id="2483_0,2513_0,2487_0,2485_0,2496_0" node-type="Node" parent-json-key="unknown" full-json-path="RangeSymbols">
+  <!--Type 中文描述：类型 | 生成约束：0：圆形；1：楔形 | 举例：1-->
+  <Type/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+  <!--生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--RangeNM 中文描述：传感器探测距离 | 生成约束：浮点数 | 举例：40.0-->
+  <RangeNM/>
+  <!--RightArc 中文描述：右边角度 | 生成约束：整数 | 举例：45-->
+  <RightArc/>
+  <!--Color 中文描述：颜色 | 生成约束：字符串。取值在“红色”、“洋红”、“绿色”、“蓝色”、“青色”中选择-->
+  <Color/>
+  <!--LeftArc 中文描述：左边角度 | 生成约束：整数 | 举例：45-->
+  <LeftArc/>
+</RangeSymbols>

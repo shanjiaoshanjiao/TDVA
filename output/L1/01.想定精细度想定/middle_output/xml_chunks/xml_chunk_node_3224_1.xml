@@ -1,0 +1,12 @@
+<ORBATItem xml-id="node_3224_1" parent-id="3438_1" node-type="Node" parent-json-key="ORBAT" full-json-path="Scenario-&amp;gt;Sides-&amp;gt;Side[1]-&amp;gt;ORBAT-&amp;gt;ORBATItem[0]">
+  <!--ActiveUnitGUID 中文描述：引用节点单元的ID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12）-->
+  <ActiveUnitGUID/>
+  <!--ID 中文描述：记录的唯一标识-->
+  <ID/>
+  <!--Name 中文描述：作战编成节点名称 | 举例：“华盛顿”号航母编队-->
+  <Name/>
+  <!--ParentID 中文描述：父节点ID | 生成约束：整数[0, )-->
+  <ParentID/>
+  <!--VisibleIndex 中文描述：节点在父节点中的显示位置 | 举例：2-->
+  <VisibleIndex/>
+</ORBATItem>

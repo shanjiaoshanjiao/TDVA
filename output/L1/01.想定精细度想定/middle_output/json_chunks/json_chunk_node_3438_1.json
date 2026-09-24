@@ -1,0 +1,27 @@
+{
+  "node_id": "node_3438_1",
+  "parent_node_id": [
+    "2473_1"
+  ],
+  "node_type": "Node",
+  "data": {
+    "ORBAT": {
+      "_position": [
+        "Scenario",
+        "Sides",
+        [
+          "Side",
+          1
+        ],
+        "ORBAT"
+      ],
+      "_parent_json_key": "Side[1]",
+      "_full_path_str": "Scenario -> Sides -> Side[1] -> ORBAT"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_3224_1"
+  ]
+}

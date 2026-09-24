@@ -1,0 +1,12 @@
+<FuelRec xml-id="node_3209_0" parent-id="3408_0" node-type="Node" parent-json-key="Fuel" full-json-path="Scenario-&amp;gt;ActiveUnits-&amp;gt;Aircraft[0]-&amp;gt;Fuel-&amp;gt;FuelRec[0]">
+  <!--MQ 中文描述：最大燃料数量 | 生成约束：整数，取值范围为0~300 | 举例：300-->
+  <MQ/>
+  <!--ft 中文描述：燃油状态类型 | 生成约束：1001：无；2001：航油；3001：柴油；3002：石油；3003：天然气；4001：电池；4002：不依赖空气；5001：火箭燃料；5002：鱼雷燃料；5003：滑翔武器 | 举例：2001.0-->
+  <ft/>
+  <!--ID 中文描述：燃油ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--DBGUID 中文描述：燃油数据库ID-->
+  <DBGUID/>
+  <!--CQ 中文描述：当前燃料数量 | 生成约束：整数，取值范围为0~300 | 举例：300-->
+  <CQ/>
+</FuelRec>

@@ -1,0 +1,40 @@
+{
+  "node_id": "node_2550_1",
+  "parent_node_id": [
+    "2492_1",
+    "2519_1"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Sensor": {
+      "Name": "AN/AAS-52型多光谱瞄准系统 [激光指示器]",
+      "GUID": "hsfw-datasensor-00000000002824",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          0
+        ],
+        "Sensors",
+        [
+          "Sensor",
+          1
+        ]
+      ],
+      "_parent_json_key": "Sensors",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Sensors -> Sensor[1]",
+      "ID": "a032647f-59ec-4ad2-8282-7c38e1e13ec5"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_6_1",
+    "node_5_1",
+    "node_2591_1",
+    "node_2589_1",
+    "node_2562_1",
+    "node_2551_1"
+  ]
+}

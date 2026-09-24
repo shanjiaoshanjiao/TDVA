@@ -1,0 +1,5 @@
+<EventTrigger_AircraftTakeOff xml-id="node_2508_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_AircraftTakeOff">
+  <ID>TAKEOFF_TRIGGER_001</ID>
+  <DetectorSideID>1</DetectorSideID>
+  <Description>飞机起飞事件触发器</Description>
+</EventTrigger_AircraftTakeOff>

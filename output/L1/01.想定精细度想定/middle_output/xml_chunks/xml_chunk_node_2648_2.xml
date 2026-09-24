@@ -1,0 +1,18 @@
+<CD xml-id="node_2648_2" parent-id="3422_2,3412_2" node-type="Node" parent-json-key="Comms" full-json-path="Scenario-&amp;gt;ActiveUnits-&amp;gt;Aircraft[1]-&amp;gt;Comms-&amp;gt;CD[0]">
+  <!--IsShowComm 中文描述：通信链路是否在态势界面显示 | 生成约束：布尔值：True 表示该通信链路在态势界面显示；False 表示该通信链路不在态势界面显示 | 举例：False-->
+  <IsShowComm/>
+  <!--IsActive 中文描述：通信链路是否启用 | 生成约束：布尔值，True表示通讯链路启用状态标记；False表示通讯链路关闭状态标记 | 举例：true-->
+  <IsActive/>
+  <!--St 中文描述：通信设备状态 | 生成约束：0：正常工作；1：受到毁伤；2：已被摧毁 | 举例：0-->
+  <St/>
+  <!--OC 中文描述：占用通道数 | 生成约束：整数 | 举例：5-->
+  <OC/>
+  <!--ID 中文描述：通信设备ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--PS 中文描述：可以与非指定通信对象建立连接 | 生成约束：False：不可以与非指定通信对象建立连接；True：可以与非指定通信对象建立连接 | 举例：False-->
+  <PS/>
+  <!--DBGUID 中文描述：通信设备数据库ID-->
+  <DBGUID/>
+  <!--DamageSeverity 中文描述：毁伤程度 | 生成约束：0：轻度；1：中度；2：重度；如果是轻度毁伤，不写入XML中 | 举例：0-->
+  <DamageSeverity/>
+</CD>

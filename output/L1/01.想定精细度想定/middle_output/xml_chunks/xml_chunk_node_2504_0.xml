@@ -1,0 +1,12 @@
+<AirOps xml-id="node_2504_0" parent-id="2498_0,2487_0,2485_0,2496_0,2483_0" node-type="Node" parent-json-key="unknown" full-json-path="AirOps">
+  <!--HDF 中文描述：GUID-->
+  <HDF/>
+  <!--CT 中文描述：作战状态持续时间定时器-->
+  <CT/>
+  <!--CHU 中文描述：当前设施的GUID-->
+  <CHU/>
+  <!--AHU 中文描述：被分配的设施的GUID-->
+  <AHU/>
+  <!--Con 中文描述：状态枚举 | 生成约束：0：路途中；1：已停靠；2：部署路途中；3：停靠中；4：返回基地；5：准备好停靠；6：前往加油；7：补给中；8：提供补给；9：电池充电中-->
+  <Con/>
+</AirOps>

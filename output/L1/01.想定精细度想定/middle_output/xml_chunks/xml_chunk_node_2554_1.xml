@@ -1,0 +1,30 @@
+<CargoMission xml-id="node_2554_1" parent-id="2506_1" node-type="Node" parent-json-key="unknown" full-json-path="CargoMission">
+  <!--Category 中文描述：任务类别 | 生成约束：0：任务；1：任务包；2：任务池 | 举例：0-->
+  <Category/>
+  <!--TransitThrottle_Ship 中文描述：水面舰艇出航油门 | 生成约束：整数 | 举例：1-->
+  <TransitThrottle_Ship/>
+  <!--StationThrottle_Ship 中文描述：水面舰艇阵位油门 | 生成约束：整数-->
+  <StationThrottle_Ship/>
+  <!--TransitThrottle_Aircraft 中文描述：飞机出航油门 | 生成约束：飞机的油门取值：；1：低速；2：巡航；3：军用；4：加力；null：不定；覆盖护航飞机挂载中规定的阵位高度-->
+  <TransitThrottle_Aircraft/>
+  <!--SISIH 中文描述：推演方由人扮演时删除该任务 | 生成约束：False:否；True：是 | 举例：False-->
+  <SISIH/>
+  <!--MountsToUnload 中文描述：需要卸载的货物及数量-->
+  <MountsToUnload/>
+  <!--ID 中文描述：任务ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
+  <ID/>
+  <!--SideWay 中文描述：预设航线-->
+  <SideWay/>
+  <!--Area 中文描述：投送区域-->
+  <Area/>
+  <!--Status 中文描述：任务状态 | 生成约束：0：激活状态；1：未激活；2：已完成；如果任务状态是激活，不写XML | 举例：1-->
+  <Status/>
+  <!--Name 中文描述：任务名称 | 举例：预警支援-->
+  <Name/>
+  <!--StationAltitude_Aircraft 中文描述：飞机阵位高度 | 生成约束：整数 | 举例：5000-->
+  <StationAltitude_Aircraft/>
+  <!--StationThrottle_Aircraft 中文描述：飞机阵位油门 | 生成约束：飞机的油门取值：；1：低速；2：巡航；3：军用；4：加力；null：不定；覆盖护航飞机挂载中规定的阵位高度-->
+  <StationThrottle_Aircraft/>
+  <!--TransitAltitude_Aircraft 中文描述：飞机出航高度 | 生成约束：整数 | 举例：3000-->
+  <TransitAltitude_Aircraft/>
+</CargoMission>

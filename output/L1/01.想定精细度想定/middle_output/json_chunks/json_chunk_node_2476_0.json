@@ -1,0 +1,21 @@
+{
+  "node_id": "node_2476_0",
+  "parent_node_id": [
+    "node_root"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Groups": {
+      "ID": null,
+      "_position": [
+        "Scenario",
+        "Groups"
+      ],
+      "_parent_json_key": "Scenario",
+      "_full_path_str": "Scenario -> Groups"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

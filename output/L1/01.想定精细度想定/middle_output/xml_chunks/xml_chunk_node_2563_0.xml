@@ -1,0 +1,8 @@
+<EventTrigger_AircraftLanding xml-id="node_2563_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_AircraftLanding">
+  <!--ID 中文描述：触发器ID-->
+  <ID/>
+  <!--DetectorSideID 中文描述：触发器单元推演方-->
+  <DetectorSideID/>
+  <!--Description 中文描述：描述-->
+  <Description/>
+</EventTrigger_AircraftLanding>

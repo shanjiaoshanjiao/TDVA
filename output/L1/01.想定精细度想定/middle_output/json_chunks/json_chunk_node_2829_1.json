@@ -1,0 +1,32 @@
+{
+  "node_id": "node_2829_1",
+  "parent_node_id": [
+    "3418_1"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Engine": {
+      "Name": "4x T56-A-15型涡轮螺旋桨发动机",
+      "GUID": "hsfw-datapropulsion-0000000039",
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          1
+        ],
+        "Propulsion",
+        [
+          "Engine",
+          0
+        ]
+      ],
+      "_parent_json_key": "Propulsion",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[1] -> Propulsion -> Engine[0]",
+      "ID": "57dddc24-8863-42db-8bc7-19cd46768e90"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": []
+}

@@ -1,0 +1,26 @@
+<ActiveUnit_DockingOps xml-id="node_2558_0" parent-id="2496_0" node-type="Node" parent-json-key="unknown" full-json-path="ActiveUnit_DockingOps">
+  <!--UNREP_S 中文描述：加油单元右侧单元GUID-->
+  <UNREP_S/>
+  <!--HDF 中文描述：停靠设施的GUID-->
+  <HDF/>
+  <!--CBRB 中文描述：返航状态枚举 | 生成约束：0：路途中；1：已停靠；2：部署路途中；3：停靠中；4：返回基地；5：准备好停靠；6：前往加油；7：补给中；8：提供补给；9：电池充电中-->
+  <CBRB/>
+  <!--CT 中文描述：作战状态持续时间定时器-->
+  <CT/>
+  <!--CBRB_ThrottleSetting 中文描述：油门设置 | 生成约束：0：完全停止；1：低速；2：巡航；3：军用；4：加力；5：滑行 | 举例：1.0-->
+  <CBRB_ThrottleSetting/>
+  <!--CHU 中文描述：当前停靠设施的GUID-->
+  <CHU/>
+  <!--CBRB_Depth 中文描述：深度-->
+  <CBRB_Depth/>
+  <!--UNREP_A 中文描述：加油单元船尾的单元GUID-->
+  <UNREP_A/>
+  <!--AHU 中文描述：被分配的停靠设施的GUID-->
+  <AHU/>
+  <!--UNREP_P 中文描述：加油机输油口的单元GUID-->
+  <UNREP_P/>
+  <!--Con 中文描述：停靠操作的状态枚举 | 生成约束：0：路途中；1：已停靠；2：部署路途中；3：停靠中；4：返回基地；5：准备好停靠；6：前往加油；7：补给中；8：提供补给；9：电池充电中-->
+  <Con/>
+  <!--UNREP_D 中文描述：加油机单元GUID-->
+  <UNREP_D/>
+</ActiveUnit_DockingOps>

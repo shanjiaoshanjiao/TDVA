@@ -1,0 +1,32 @@
+{
+  "node_id": "node_3412_0",
+  "parent_node_id": [
+    "2496_0",
+    "2483_0",
+    "2513_0",
+    "2498_0",
+    "2487_0",
+    "2485_0"
+  ],
+  "node_type": "Node",
+  "data": {
+    "Comms": {
+      "_position": [
+        "Scenario",
+        "ActiveUnits",
+        [
+          "Aircraft",
+          0
+        ],
+        "Comms"
+      ],
+      "_parent_json_key": "Aircraft[0]",
+      "_full_path_str": "Scenario -> ActiveUnits -> Aircraft[0] -> Comms"
+    }
+  },
+  "parent_json_key": "unknown",
+  "full_json_path": "unknown",
+  "children_node_ids": [
+    "node_2648_0"
+  ]
+}

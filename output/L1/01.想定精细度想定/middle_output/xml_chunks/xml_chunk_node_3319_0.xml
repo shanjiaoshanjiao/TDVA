@@ -1,0 +1,8 @@
+<UserAirDefenseArea xml-id="node_3319_0" parent-id="3419_0" node-type="Node" parent-json-key="unknown" full-json-path="UserAirDefenseArea">
+  <!--IsShow 中文描述：是否显示 | 生成约束：False：否；True：是 | 举例：False-->
+  <IsShow/>
+  <!--Name 中文描述：区域名称 | 举例：“区域1”-->
+  <Name/>
+  <!--ID 中文描述：区域ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12） | 举例：f105baf3-c72b-4e1e-8d4c-53bf9fe3b643-->
+  <ID/>
+</UserAirDefenseArea>
