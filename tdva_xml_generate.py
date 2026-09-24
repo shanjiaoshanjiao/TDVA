@@ -1659,6 +1659,7 @@ class TDVAXMLGenerator:
 
             # 4. 生成多实例分块
             xml_chunks, chunk_mapping = self.generate_aligned_chunks(fragments, entity_data_map)
+            
 
             # 5. 异步填充分块内容
             fragment_results = await self.fill_all_chunk_instances(fragments, chunk_mapping)
