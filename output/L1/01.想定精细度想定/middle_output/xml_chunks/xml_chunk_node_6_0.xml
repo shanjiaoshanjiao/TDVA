@@ -1,4 +1,0 @@
-<Ptc-track xml-id="node_6_0" parent-id="2550_0" node-type="Node" parent-json-key="unknown" full-json-path="Ptc-track">
-  <!--Seg 中文描述：俯仰角的跟踪/照射位置 | 生成约束：整数值，取值范围为0-360 | 举例：180-->
-  <Seg/>
-</Ptc-track>

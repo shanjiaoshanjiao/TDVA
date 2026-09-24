@@ -1,6 +1,0 @@
-<AAR xml-id="node_2584_0" parent-id="2473_0" node-type="Node" parent-json-key="unknown" full-json-path="AAR">
-  <!--Losses 中文描述：所有战损单元GUID | 举例：GUID1_GUID2_GUID3-->
-  <Losses/>
-  <!--Expenditures 中文描述：武器消耗 | 举例：Weapon_DBGUID，数量-->
-  <Expenditures/>
-</AAR>

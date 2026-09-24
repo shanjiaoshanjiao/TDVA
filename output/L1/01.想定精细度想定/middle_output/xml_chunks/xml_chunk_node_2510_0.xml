@@ -1,5 +1,0 @@
-<EventCondition_LuaScript xml-id="node_2510_0" parent-id="2480_0" node-type="Node" parent-json-key="unknown" full-json-path="EventCondition_LuaScript">
-  <ID>7f3e5c9a-2b8d-4f6e-9a1c-3d5e7f8a2b4c</ID>
-  <ScriptText>function OnEvent() return true end</ScriptText>
-  <Description>事件条件Lua脚本</Description>
-</EventCondition_LuaScript>

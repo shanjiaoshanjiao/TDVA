@@ -1,6 +1,0 @@
-<EventTrigger_ScenLoaded xml-id="node_2565_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_ScenLoaded">
-  <!--ID 中文描述：触发器ID-->
-  <ID/>
-  <!--Description 中文描述：描述-->
-  <Description/>
-</EventTrigger_ScenLoaded>

@@ -1,6 +1,0 @@
-<EventAction_Message xml-id="node_2535_0" parent-id="2479_0" node-type="Node" parent-json-key="unknown" full-json-path="EventAction_Message">
-  <strTextTEXT>发送消息</strTextTEXT>
-  <Description>向指定对象发送一条消息</Description>
-  <ID>a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d</ID>
-  <Message>目标已到达指定区域，请执行后续任务。</Message>
-</EventAction_Message>

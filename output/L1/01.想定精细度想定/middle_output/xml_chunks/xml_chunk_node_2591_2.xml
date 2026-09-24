@@ -1,4 +1,0 @@
-<TTFFC xml-id="node_2591_2" parent-id="2550_2" node-type="Node" parent-json-key="unknown" full-json-path="TTFFC">
-  <!--ID 中文描述：目标的探测ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
-  <ID/>
-</TTFFC>

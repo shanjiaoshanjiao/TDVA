@@ -1,4 +1,0 @@
-<Triggers xml-id="node_2570_0" parent-id="3415_0" node-type="Node" parent-json-key="unknown" full-json-path="Triggers">
-  <!--Trigger 中文描述：触发器GUID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12）-->
-  <Trigger/>
-</Triggers>

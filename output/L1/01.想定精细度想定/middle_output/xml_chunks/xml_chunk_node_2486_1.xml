@@ -1,8 +1,0 @@
-<Damage xml-id="node_2486_1" parent-id="2496_1,2487_1,2485_1,2483_1" node-type="Node" parent-json-key="unknown" full-json-path="Damage">
-  <!--TTNSDC 中文描述：下回计算系统毁伤的时间-->
-  <TTNSDC/>
-  <!--Fire 中文描述：火灾程度 | 生成约束：0：无火；1：小火；2：中火；3：猛火；4：大火；如果是无火，不写入XML | 举例：0：-->
-  <Fire/>
-  <!--Flood 中文描述：水灾程度 | 生成约束：0：未进水；1：少量；2：中等；3：严重；4：翻覆；如果是未进水，不写入XML | 举例：0-->
-  <Flood/>
-</Damage>

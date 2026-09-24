@@ -1,6 +1,0 @@
-<EventTrigger_UnitDamaged xml-id="node_2532_0" parent-id="2478_0" node-type="Node" parent-json-key="unknown" full-json-path="EventTrigger_UnitDamaged">
-  <DamagePercent>50</DamagePercent>
-  <ID>1</ID>
-  <IsDamagePercentAboutZero>False</IsDamagePercentAboutZero>
-  <Description>当单元毁伤百分比达到50%时触发事件</Description>
-</EventTrigger_UnitDamaged>

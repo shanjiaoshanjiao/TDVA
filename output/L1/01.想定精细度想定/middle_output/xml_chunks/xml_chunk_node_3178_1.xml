@@ -1,8 +1,0 @@
-<CLE xml-id="node_3178_1" parent-id="3424_1" node-type="Node" parent-json-key="unknown" full-json-path="CLE">
-  <!--DeviceUsed 中文描述：设备被用 | 生成约束：True 是；；False 否-->
-  <DeviceUsed/>
-  <!--ID 中文描述：通信数据链的ID | 生成约束：随机生成UUID（32 个十六进制数字+4个连字符组成，格式为8-4-4-4-12）-->
-  <ID/>
-  <!--CommPartner 中文描述：通信数据链的平台GUID-->
-  <CommPartner/>
-</CLE>

@@ -1,4 +1,0 @@
-<Contacts_NonAU xml-id="node_2515_0" parent-id="2473_0" node-type="Node" parent-json-key="unknown" full-json-path="Contacts_NonAU">
-  <!--ID 中文描述：探测单元的GUID | 生成约束：随机生成，唯一标准UUID（ 32 个十六进制数字 + 4 个连字符组成，格式为 8-4-4-4-12），如果没有探测非活动单元；不写XML-->
-  <ID/>
-</Contacts_NonAU>
