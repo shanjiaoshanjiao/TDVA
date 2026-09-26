@@ -595,7 +595,6 @@ class TDVAXMLGenerator:
             file_path.parent.mkdir(parents=True, exist_ok=True)
 
 
-
     def create_indexes(self):
         """创建必要的数据库索引"""
         try:
@@ -1087,7 +1086,6 @@ class TDVAXMLGenerator:
         return serialize_xml_element(node_element)
 
 
-
     def generate_fragments(self) -> List[Dict]:
         """基于图结构生成XML片段"""
         fragments = []
@@ -1124,7 +1122,6 @@ class TDVAXMLGenerator:
             """
             root_result = self.neo4j_graph.run(root_query).data()
             
-
             if root_result:
                 root_data = root_result[0]
                 fragments.append({
@@ -1277,7 +1274,6 @@ class TDVAXMLGenerator:
             xml_str = llm_output # 假设整个输出就是XML
 
         return xml_str
-
 
     def _load_chunk_inputs(
         self,
@@ -1445,7 +1441,6 @@ class TDVAXMLGenerator:
         """"保存XML分块"""
         Path(xml_path).write_text(xml_string, encoding="utf-8")
 
-
     def _build_success_result(
             self,
             instance_node_id: str,
@@ -1610,99 +1605,331 @@ class TDVAXMLGenerator:
                 "error": str(exc),
             }
 
-    # ===================== 核心修改5：批量生成所有实例的片段内容 =====================
-    async def fill_all_chunk_instances(
-        self, 
-        fragments: List[Dict], 
-        chunk_mapping: Dict
-    ) -> List[Dict]:
-        """并行生成所有List元素实例的片段内容"""
-        # 【修改8】移除冗余的aiohttp.ClientSession（LLM调用被注释）
-        # 构建任务列表
-        tasks = []
-        for instance_id in chunk_mapping.keys():
-            # 找到原始片段（通过original_node_id匹配）
-            original_node_id = int(chunk_mapping[instance_id]["original_node_id"])
-            fragment = next((f for f in fragments if f["node_id"] == original_node_id), None)
+    def _build_missing_fragment_result(
+        self,
+        instance_node_id: str,
+        original_node_id: int,
+    ) -> dict:
+        return {
+            "instance_node_id": instance_node_id,
+            "original_node_id": original_node_id,
+            "status": "failed",
+            "error": (
+                f"未找到原始模板片段: "
+                f"{original_node_id}"
+            ),
+        }
+
+
+    # ===================== 批量生成所有实例的片段内容 =====================
+    async def _fill_chunk_instance_safe(
+        self,
+        instance_id: str,
+        mapping_entry: Dict,
+        fragment_by_id: Dict[int, Dict],
+    ) -> Dict:
+        """
+        安全处理单个分块实例。
+
+        无论成功、找不到原始 fragment，还是处理过程中抛出异常，
+        都返回包含 instance_node_id 和 status 的结果字典。
+        """
+        original_node_id = None
+
+        try:
+            if not isinstance(mapping_entry, dict):
+                raise TypeError(
+                    f"分块映射条目必须是字典，实际为 "
+                    f"{type(mapping_entry).__name__}"
+                )
+
+            raw_original_node_id = mapping_entry.get(
+                "original_node_id"
+            )
+            if raw_original_node_id is None:
+                raise ValueError(
+                    "chunk_mapping 条目缺少 original_node_id"
+                )
+
+            original_node_id = int(raw_original_node_id)
+            fragment = fragment_by_id.get(original_node_id)
+
             if fragment is None:
-                logger.warning(f"未找到原始片段（node_id={original_node_id}），跳过实例{instance_id}")
-                continue
-            # 直接调用，无需session
-            tasks.append(self.generate_fragment_content(instance_id, fragment))
-        
-        # 并行执行
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        # 过滤异常结果
-        final_results = []
-        for res in results:
-            if isinstance(res, Exception):
-                logger.error(f"任务执行异常: {res}")
-                final_results.append({
+                error = (
+                    f"未找到原始模板片段: "
+                    f"original_node_id={original_node_id}"
+                )
+                logger.error(
+                    "分块实例 %s 处理失败: %s",
+                    instance_id,
+                    error,
+                )
+                return {
+                    "instance_node_id": instance_id,
+                    "original_node_id": original_node_id,
                     "status": "failed",
-                    "error": str(res)
-                })
-            else:
-                final_results.append(res)
-        return final_results
-    
+                    "error": error,
+                }
 
-    def assemble_final_xml(self, chunk_mapping):
+            # 如果 generate_fragment_content 的签名是：
+            # async def generate_fragment_content(
+            #     self, instance_node_id, fragment, ...
+            # ):
+            result = await self.generate_fragment_content(
+                instance_node_id=instance_id,
+                fragment=fragment,
+            )
+
+            if not isinstance(result, dict):
+                raise TypeError(
+                    "generate_fragment_content 必须返回字典，"
+                    f"实际返回 {type(result).__name__}"
+                )
+
+            # 统一补齐结果字段，保证后续统计和报告可以使用。
+            result = dict(result)
+            result.setdefault("instance_node_id", instance_id)
+            result.setdefault("original_node_id", original_node_id)
+            result.setdefault("status", "success")
+
+            return result
+
+        except Exception as exc:
+            logger.exception(
+                "分块实例 %s 处理时发生异常",
+                instance_id,
+            )
+
+            return {
+                "instance_node_id": instance_id,
+                "original_node_id": original_node_id,
+                "status": "failed",
+                "error": str(exc),
+            }
+
+    async def fill_all_chunk_instances(
+        self,
+        fragments: List[Dict],
+        chunk_mapping: Dict,
+    ) -> List[Dict]:
         """
-        基于JSON路径递归查找父节点，构建完整XML树
+        并行填充 chunk_mapping 中的所有分块实例。
+
+        每个 mapping 实例都会对应一个结果；即使找不到对应的
+        原始 fragment，也会返回一条 failed 结果，而不是跳过。
         """
-        # 2. 构建节点索引（支持多维度查找）
-        # - 按完整JSON路径索引
-        path2node = {node["full_json_path"]: node for node in chunk_mapping.values()}
-        # - 按JSON节点名+父键索引（兼容短路径匹配）
-        name_parent2node = {}
-        for node in chunk_mapping.values():
-            key = (node["json_node_name"], node["parent_json_key"])
-            name_parent2node[key] = node
-        
-        # 3. 找到根节点（JSON路径最顶层）
-        root_nodes = [
-            node for node in chunk_mapping.values()
-            if node["parent_json_key"] == "Scenario" or node["parent_json_key"] is None
-            or len(node["full_json_path"].split("->")) == 1  # 路径只有一层（根）
+        if not chunk_mapping:
+            raise ValueError(
+                "chunk_mapping 为空，无法填充分块"
+            )
+
+        # 建立原始 fragment 索引，避免每个实例都遍历 fragments。
+        fragment_by_id: Dict[int, Dict] = {}
+
+        for fragment in fragments:
+            try:
+                original_node_id = int(fragment["node_id"])
+            except (KeyError, TypeError, ValueError):
+                logger.warning(
+                    "跳过无效的 fragment，缺少有效 node_id: %s",
+                    fragment,
+                )
+                continue
+
+            if original_node_id in fragment_by_id:
+                logger.warning(
+                    "发现重复的原始 fragment node_id: %s",
+                    original_node_id,
+                )
+
+            fragment_by_id[original_node_id] = fragment
+
+        # 为每个 chunk_mapping 条目创建一个任务。
+        # gather 会按照 tasks 的顺序返回结果，结果顺序与 mapping 顺序一致。
+        tasks = [
+            self._fill_chunk_instance_safe(
+                instance_id=str(instance_id),
+                mapping_entry=mapping_entry,
+                fragment_by_id=fragment_by_id,
+            )
+            for instance_id, mapping_entry in chunk_mapping.items()
         ]
-        if not root_nodes:
-            # 兜底：按node_type找Root_Node
-            root_nodes = [node for node in chunk_mapping.values() if node["node_type"] == "Root_Node"]
-        if not root_nodes:
-            raise ValueError("未找到XML根节点")
-        root_node = root_nodes[0]
 
-        # 4. 递归构建XML树（从根节点向下拼接子节点）
-        root_xml_elem = self._parse_xml_chunk(root_node["xml_chunk_path"])
-        
+        results = await asyncio.gather(*tasks)
+
+        # 防止后续代码或辅助方法意外返回不完整结果。
+        expected_ids = {
+            str(instance_id)
+            for instance_id in chunk_mapping
+        }
+        actual_ids = {
+            result.get("instance_node_id")
+            for result in results
+        }
+
+        missing_ids = expected_ids - actual_ids
+        if missing_ids:
+            raise RuntimeError(
+                "分块处理结果缺失实例: "
+                f"{sorted(missing_ids)}"
+            )
+
+        return results
+
+    def _find_root_node(
+        self,
+        chunk_mapping: dict,
+    ) -> dict:
+        root_nodes = [
+            node
+            for node in chunk_mapping.values()
+            if node.get("node_type") == "Root_Node"
+        ]
+
+        if len(root_nodes) == 0:
+            raise ValueError(
+                "chunk_mapping 中未找到根节点"
+            )
+
+        if len(root_nodes) > 1:
+            raise ValueError(
+                "chunk_mapping 中存在多个根节点"
+            )
+
+        return root_nodes[0]
+
+
+    def _build_xml_node_indexes(
+        self,
+        chunk_mapping: dict,
+    ) -> tuple[dict, dict]:
+        """构建 XML 组装需要的节点索引。"""
+        path2node = {}
+        name_parent2node = {}
+
+        for node in chunk_mapping.values():
+            full_json_path = node.get("full_json_path")
+            if full_json_path:
+                path2node[full_json_path] = node
+
+            json_node_name = node.get("json_node_name")
+            if json_node_name:
+                key = (
+                    json_node_name,
+                    node.get("parent_json_key"),
+                )
+                name_parent2node[key] = node
+
+        return path2node, name_parent2node
+
+    def _find_root_node(
+        self,
+        chunk_mapping: dict,
+    ) -> dict:
+        """按照现有规则查找根节点。"""
+        nodes = list(chunk_mapping.values())
+
+        root_nodes = [
+            node
+            for node in nodes
+            if (
+                node.get("parent_json_key") == "Scenario"
+                or node.get("parent_json_key") is None
+                or (
+                    node.get("full_json_path")
+                    and len(node["full_json_path"].split("->")) == 1
+                )
+            )
+        ]
+
+        # 保留原有兜底逻辑
+        if not root_nodes:
+            root_nodes = [
+                node
+                for node in nodes
+                if node.get("node_type") == "Root_Node"
+            ]
+
+        if not root_nodes:
+            raise ValueError("未找到 XML 根节点")
+
+        if len(root_nodes) > 1:
+            logger.warning(
+                "找到多个根节点候选，将使用第一个: %s",
+                [
+                    node.get("node_id")
+                    for node in root_nodes
+                ],
+            )
+
+        return root_nodes[0]
+
+    def _serialize_final_xml(
+        self,
+        root_xml_elem: etree._Element,
+    ) -> str:
+        """序列化并严格校验最终 XML。"""
+        try:
+            final_xml_bytes = etree.tostring(
+                root_xml_elem,
+                encoding="utf-8",
+                pretty_print=True,
+                xml_declaration=True,
+                with_comments=True,
+            )
+
+            # 严格重新解析，避免返回格式错误的 XML
+            etree.fromstring(
+                final_xml_bytes,
+                parser=etree.XMLParser(recover=False),
+            )
+        except (TypeError, ValueError, etree.XMLSyntaxError) as exc:
+            raise ValueError("最终 XML 序列化或校验失败") from exc
+
+        return final_xml_bytes.decode("utf-8")
+
+
+    def assemble_final_xml(
+        self,
+        chunk_mapping: dict,
+    ) -> str:
+        """
+        基于 JSON 路径递归查找父节点，构建完整 XML 树。
+        """
+        if not chunk_mapping:
+            raise ValueError(
+                "chunk_mapping 为空，无法组装 XML"
+            )
+
+        path2node, name_parent2node = (
+            self._build_xml_node_indexes(chunk_mapping)
+        )
+
+        root_node = self._find_root_node(chunk_mapping)
+
+        xml_chunk_path = root_node.get("xml_chunk_path")
+        if not xml_chunk_path:
+            raise ValueError(
+                "根节点缺少 xml_chunk_path"
+            )
+
+        root_xml_elem = self._parse_xml_chunk(
+            xml_chunk_path
+        )
+
         self._recursively_attach_children(
             current_node=root_node,
             current_xml_elem=root_xml_elem,
             chunk_mapping=chunk_mapping,
             path2node=path2node,
-            name_parent2node=name_parent2node
+            name_parent2node=name_parent2node,
         )
 
-        # 5. 保存最终XML文件
-        # 改用lxml序列化，避免minidom和编码声明冲突
-        # 1. 确保root_xml_elem是lxml.etree.Element类型（如果是标准库ET的，先转换）
-        if isinstance(root_xml_elem, etree.Element):
-            # 标准库ET节点转lxml节点（兼容旧代码）
-            root_xml_elem = etree.fromstring(ET.tostring(root_xml_elem, encoding='utf-8'))
+        # 必须在所有子节点挂载完成后再删除内部属性
+        self._remove_specific_attributes(root_xml_elem)
 
-        # 2. lxml格式化（无编码声明，带缩进）
-        final_xml_bytes = etree.tostring(
-            root_xml_elem,
-            encoding='utf-8',
-            pretty_print=True,
-            xml_declaration=False,  # 不生成编码声明
-            with_comments=True
-        )
-        final_xml = final_xml_bytes.decode('utf-8')
-        # 可选：如果需要XML声明，最后手动加（仅在最终文件最顶部加一次）
-        final_xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + final_xml
-        
-        return final_xml
+        return self._serialize_final_xml(root_xml_elem)
+
 
     def _remove_specific_attributes(self, elem: etree._Element):
         """递归遍历所有元素，删除指定属性"""
@@ -1722,22 +1949,217 @@ class TDVAXMLGenerator:
         for child in elem:
             self._remove_specific_attributes(child)
 
+    def _parse_xml_chunk(
+        self,
+        xml_chunk_path: Path | str,
+    ) -> etree._Element:
+        """
+        严格解析 XML 分块。
 
-    def _parse_xml_chunk(self, xml_chunk_path: str) -> etree._Element:
+        这里只负责读取和解析，不负责：
+        - 删除内部锚点属性；
+        - 挂载子节点；
+        - 创建替代节点。
+        """
+        xml_chunk_path = Path(xml_chunk_path)
+
+        if not xml_chunk_path.exists():
+            raise FileNotFoundError(
+                f"XML 分块不存在: {xml_chunk_path}"
+            )
+
+        parser = etree.XMLParser(
+            remove_blank_text=True,
+            recover=False,
+        )
+
         try:
-            # 核心修改：使用lxml解析，保留命名空间
-            parser = etree.XMLParser(remove_blank_text=True, recover=True)
-            xml_tree = etree.parse(xml_chunk_path, parser)
-            current_elem = xml_tree.getroot()
-            # 移除锚点属性（不影响仿真引擎解析）
-            self._remove_specific_attributes(current_elem)
-            return current_elem
-        except Exception as e:
-            logger.error(f"解析XML分块 {xml_chunk_path} 失败: {e}")
-            # 创建替代元素
-            node_name = os.path.basename(xml_chunk_path).replace("xml_chunk_", "").replace(".xml", "")
-            return etree.Element(sanitize_string(node_name))            
+            xml_tree = etree.parse(
+                str(xml_chunk_path),
+                parser,
+            )
+        except (OSError, etree.XMLSyntaxError) as exc:
+            logger.error(
+                "解析 XML 分块失败: %s, error=%s",
+                xml_chunk_path,
+                exc,
+            )
+            raise ValueError(
+                f"XML 分块解析失败: {xml_chunk_path}"
+            ) from exc
 
+        root = xml_tree.getroot()
+
+        if root is None:
+            raise ValueError(
+                f"XML 分块没有根节点: {xml_chunk_path}"
+            )
+
+        return root
+
+    def _attach_child_node(
+        self,
+        current_node: dict,
+        current_xml_elem: ET.Element,
+        child_node: dict,
+        chunk_mapping: dict,
+        path2node: dict,
+        name_parent2node: dict,
+    ) -> None:
+        """
+        解析、挂载一个子节点，并递归处理其后代。
+        """
+        xml_chunk_path = child_node.get(
+            "xml_chunk_path"
+        )
+
+        if not xml_chunk_path:
+            raise ValueError(
+                "子节点缺少 xml_chunk_path: "
+                f"{child_node.get('node_id')}"
+            )
+
+        child_xml_elem = self._parse_xml_chunk(
+            xml_chunk_path
+        )
+
+        current_xml_elem.append(
+            child_xml_elem
+        )
+
+        self._recursively_attach_children(
+            current_node=child_node,
+            current_xml_elem=child_xml_elem,
+            chunk_mapping=chunk_mapping,
+            path2node=path2node,
+            name_parent2node=name_parent2node,
+        )
+
+    def _is_xml_only_child(
+        self,
+        current_node_id,
+        child_node: dict,
+    ) -> bool:
+        """
+        判断 XML-only 节点是否属于当前节点。
+
+        保持原逻辑：
+        - 优先读取 parent_id；
+        - 其次读取 instance_parent_id；
+        - 其次读取 parent_node_id；
+        - 最后读取 original_parent_id；
+        - 同时兼容带 node_ 前缀和不带前缀的 ID。
+        """
+        child_parent_id = (
+            child_node.get("parent_id")
+            or child_node.get("instance_parent_id")
+            or child_node.get("parent_node_id")
+            or child_node.get("original_parent_id")
+            or []
+        )
+
+        if not isinstance(child_parent_id, list):
+            child_parent_id = [child_parent_id]
+
+        current_id_candidates = set()
+
+        if current_node_id:
+            current_node_id = str(current_node_id)
+
+            current_id_candidates.add(
+                current_node_id
+            )
+
+            current_id_candidates.add(
+                current_node_id.replace(
+                    "node_",
+                    "",
+                    1,
+                )
+            )
+
+        child_parent_candidates = set()
+
+        for parent_id in child_parent_id:
+            if not parent_id:
+                continue
+
+            parent_id = str(parent_id)
+
+            child_parent_candidates.add(
+                parent_id
+            )
+
+            child_parent_candidates.add(
+                parent_id.replace(
+                    "node_",
+                    "",
+                    1,
+                )
+            )
+
+        return bool(
+            current_id_candidates.intersection(
+                child_parent_candidates
+            )
+        )
+
+
+    def _is_json_path_child(
+        self,
+        child_node: dict,
+        current_full_path: str,
+        current_path_depth: int,
+        current_node_identifier,
+    ) -> bool:
+        """
+        判断普通节点是否是当前节点的直接子节点。
+
+        保持原来的三条规则：
+        1. 子节点路径深度比当前节点多一层；
+        2. 子节点父路径等于当前节点完整路径；
+        3. 子节点 parent_json_key 等于当前节点标识。
+        """
+        child_full_path = (
+            child_node.get("full_json_path") or ""
+        )
+
+        if not child_full_path:
+            return False
+
+        if child_full_path == "unknown":
+            return False
+
+        child_path_fragments = [
+            fragment.strip()
+            for fragment in child_full_path.split("->")
+            if fragment.strip()
+        ]
+
+        # 条件 1：
+        # 子节点路径深度 = 当前节点路径深度 + 1
+        if len(child_path_fragments) != (
+            current_path_depth + 1
+        ):
+            return False
+
+        # 条件 2：
+        # 子节点父路径 = 当前节点完整路径
+        child_parent_path = " -> ".join(
+            child_path_fragments[:-1]
+        )
+
+        if child_parent_path != current_full_path:
+            return False
+
+        # 条件 3：
+        # child.parent_json_key = current node identifier
+        if child_node.get("parent_json_key") != (
+            current_node_identifier
+        ):
+            return False
+
+        return True    
 
     def _recursively_attach_children(
         self,
@@ -1745,24 +2167,51 @@ class TDVAXMLGenerator:
         current_xml_elem: ET.Element,
         chunk_mapping: dict,
         path2node: dict,
-        name_parent2node: dict
-    ):
+        name_parent2node: dict,
+    ) -> None:
         """
-        递归查找并挂载子节点
-        - 普通节点：基于JSON路径匹配父节点
-        - Cov / Cov_Ill：没有对应JSON分块，按XML图结构父子关系直接挂载
+        递归查找并挂载子节点。
+
+        节点匹配规则保持原逻辑：
+        - XML-only 节点：根据 XML 父节点 ID 匹配；
+        - 普通节点：根据 JSON 路径和 parent_json_key 匹配。
         """
-        xml_only_node_names = {"Cov", "Cov_Ill", "Ptc", "Ptc-track", "Weaps", "Navigator", "AI", "Kinematics", "Damage", "AirOps", "Aircraft_Sensory", "Doctrine"}
+        xml_only_node_names = {
+            "Cov",
+            "Cov_Ill",
+            "Ptc",
+            "Ptc-track",
+            "Weaps",
+            "Navigator",
+            "AI",
+            "Kinematics",
+            "Damage",
+            "AirOps",
+            "Aircraft_Sensory",
+            "Doctrine",
+        }
 
         current_node_id = current_node.get("node_id")
-        current_full_path = current_node.get("full_json_path", "")
-        current_path_fragments = [
-            f.strip() for f in current_full_path.split("->") if f.strip()
-        ]
-        current_path_depth = len(current_path_fragments)
+        current_full_path = (
+            current_node.get("full_json_path") or ""
+        )
 
-        for node_id, child_node in chunk_mapping.items():
-            # 跳过自身，避免循环
+        current_path_fragments = [
+            fragment.strip()
+            for fragment in current_full_path.split("->")
+            if fragment.strip()
+        ]
+
+        current_path_depth = len(
+            current_path_fragments
+        )
+
+        current_node_identifier = (
+            self._get_node_identifier(current_node)
+        )
+
+        for child_node in chunk_mapping.values():
+            # 保留原逻辑：跳过当前节点自身
             if child_node.get("node_id") == current_node_id:
                 continue
 
@@ -1772,81 +2221,45 @@ class TDVAXMLGenerator:
                 or ""
             )
 
-            # 特殊处理：Cov / Cov_Ill 没有对应JSON路径，不能用JSON路径判断父节点
+            # XML-only 节点继续使用原来的 XML 父子关系匹配
             if child_node_name in xml_only_node_names:
-                child_parent_id = (
-                    child_node.get("parent_id")
-                    or child_node.get("instance_parent_id")
-                    or child_node.get("parent_node_id")
-                    or child_node.get("original_parent_id")
-                    or []
-                )
-
-                if not isinstance(child_parent_id, list):
-                    child_parent_id = [child_parent_id]
-
-                current_id_candidates = {
-                    current_node_id,
-                    current_node_id.replace("node_", "", 1),
-                }
-
-                child_parent_candidates = set()
-                for pid in child_parent_id:
-                    if not pid:
-                        continue
-                    pid = str(pid)
-                    child_parent_candidates.add(pid)
-                    child_parent_candidates.add(pid.replace("node_", "", 1))
-
-                if not current_id_candidates.intersection(child_parent_candidates):
+                if not self._is_xml_only_child(
+                    current_node_id=current_node_id,
+                    child_node=child_node,
+                ):
                     continue
-                
-                child_xml_elem = self._parse_xml_chunk(child_node["xml_chunk_path"])
-                
-                current_xml_elem.append(child_xml_elem)
 
-                self._recursively_attach_children(
-                    current_node=child_node,
-                    current_xml_elem=child_xml_elem,
+                self._attach_child_node(
+                    current_node=current_node,
+                    current_xml_elem=current_xml_elem,
+                    child_node=child_node,
                     chunk_mapping=chunk_mapping,
                     path2node=path2node,
-                    name_parent2node=name_parent2node
+                    name_parent2node=name_parent2node,
                 )
+
+                # 保留原逻辑：XML-only 节点不再走普通节点匹配
                 continue
 
-            # 普通节点仍然走原来的JSON路径挂载逻辑
-            child_full_path = child_node.get("full_json_path", "")
-            if not child_full_path or child_full_path == "unknown":
+            # 普通节点继续使用原来的 JSON 路径匹配
+            if not self._is_json_path_child(
+                child_node=child_node,
+                current_full_path=current_full_path,
+                current_path_depth=current_path_depth,
+                current_node_identifier=current_node_identifier,
+            ):
                 continue
 
-            child_path_fragments = [
-                f.strip() for f in child_full_path.split("->") if f.strip()
-            ]
-
-            # 条件1：子节点路径深度 = 当前节点路径深度 + 1
-            if len(child_path_fragments) != current_path_depth + 1:
-                continue
-
-            # 条件2：子节点的父路径 = 当前节点的完整路径
-            child_parent_path = " -> ".join(child_path_fragments[:-1])
-            if child_parent_path != current_full_path:
-                continue
-
-            # 条件3：子节点的parent_json_key匹配当前节点标识
-            current_node_identifier = self._get_node_identifier(current_node)
-            if child_node.get("parent_json_key") != current_node_identifier:
-                continue
-
-            child_xml_elem = self._parse_xml_chunk(child_node["xml_chunk_path"])
-            current_xml_elem.append(child_xml_elem)
-
-            self._recursively_attach_children(
-                current_node=child_node,
-                current_xml_elem=child_xml_elem,
+            self._attach_child_node(
+                current_node=current_node,
+                current_xml_elem=current_xml_elem,
+                child_node=child_node,
                 chunk_mapping=chunk_mapping,
                 path2node=path2node,
-                name_parent2node=name_parent2node
+                name_parent2node=name_parent2node,
             )
+
+
 
     def _get_node_identifier(self, node: dict) -> str:
         """
@@ -1869,6 +2282,226 @@ class TDVAXMLGenerator:
             return last_fragment
 
 
+    def write_final_xml(self, final_xml: str) -> str:
+        """
+        保存最终组装完成的 XML 文件。
+        """
+        final_xml_path = self.final_xml_path / "final_tree.xml"
+
+        final_xml_path.write_text(
+            final_xml,
+            encoding="utf-8",
+        )
+
+        logger.info(
+            "完整 XML 树已保存至: %s",
+            final_xml_path,
+        )
+
+        return str(final_xml_path)
+
+
+    def write_generation_report(
+        self,
+        total_time: float,
+        fragment_results: List[Dict],
+    ) -> str:
+        """
+        保存本次单 XML 生成过程的统计报告。
+        """
+        failed_instances = [
+            result
+            for result in fragment_results
+            if result.get("status") == "failed"
+        ]
+
+        total_count = len(fragment_results)
+        success_count = total_count - len(failed_instances)
+
+        success_ratio = (
+            success_count / total_count
+            if total_count > 0
+            else 0.0
+        )
+
+        failed_instance_ids = [
+            result.get("instance_node_id")
+            for result in failed_instances
+        ]
+
+        report = (
+            f"总耗时: {total_time:.2f} 秒\n"
+            f"生成成功的分块比率: {success_ratio:.2f}\n"
+            f"成功分块数量: {success_count}\n"
+            f"分块总数量: {total_count}\n"
+            f"失败实例数量: {len(failed_instances)}\n"
+            f"失败实例节点ID: {failed_instance_ids}\n"
+        )
+
+        self.ex_info_file.write_text(
+            report,
+            encoding="utf-8",
+        )
+
+        logger.info(
+            "生成报告已保存至: %s",
+            self.ex_info_file,
+        )
+
+        return str(self.ex_info_file)
+
+
+    def prepare_entity_data_map(
+        self,
+        json_data: Dict,
+        fragments: List[Dict],
+    ) -> Dict:
+        """
+        根据 XML 模板片段，从输入 JSON 中提取实体数据，
+        并为实体统一分配业务 ID。
+        """
+        entity_data_map = {}
+
+        for fragment in fragments:
+            node_id = fragment["node_id"]
+
+            entity_data_map[node_id] = extract_nested_entity_data(
+                nested_data=json_data,
+                fragment=fragment,
+            )
+
+        entity_data_map = self._inject_ids_into_entity_data_map(
+            entity_data_map
+        )
+
+        self.entity_id_registry.save(
+            self.entity_id_map_file
+        )
+
+        logger.info(
+            "实体业务ID预分配完成，共分配 %d 个ID，映射文件：%s",
+            len(self.entity_id_registry.entity_ids),
+            self.entity_id_map_file,
+        )
+
+        Path(self.entity_map_file).write_text(
+                json.dumps(entity_data_map, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+        )
+        logger.info(f"实体数据映射已保存至: {self.entity_map_file}")
+
+        return entity_data_map
+
+    def write_generation_report(
+        self,
+        total_time: float,
+        fragment_results: list[dict],
+    ) -> Path:
+        failed_instances = [
+            result
+            for result in fragment_results
+            if result.get("status") == "failed"
+        ]
+
+        total_count = len(fragment_results)
+        success_count = total_count - len(failed_instances)
+
+        success_ratio = (
+            success_count / total_count
+            if total_count > 0
+            else 0.0
+        )
+
+        failed_ids = [
+            result.get("instance_node_id")
+            for result in failed_instances
+        ]
+
+        report = (
+            f"总耗时: {total_time:.2f} 秒\n"
+            f"生成成功的分块比率: {success_ratio:.2f}\n"
+            f"成功分块数量: {success_count}\n"
+            f"分块总数量: {total_count}\n"
+            f"失败实例数量: {len(failed_instances)}\n"
+            f"失败实例节点ID: {failed_ids}\n"
+        )
+
+        self.ex_info_file.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        self.ex_info_file.write_text(
+            report,
+            encoding="utf-8",
+        )
+
+        return self.ex_info_file
+
+
+    def build_and_save_chunks(
+        self,
+        fragments: list[dict],
+        entity_data_map: dict,
+    ) -> dict:
+        (
+            xml_chunks,
+            json_chunks,
+            chunk_mapping,
+        ) = self.generate_aligned_chunks(
+            fragments=fragments,
+            entity_data_map=entity_data_map,
+        )
+
+        xml_ids = set(xml_chunks)
+        json_ids = set(json_chunks)
+        mapping_ids = set(chunk_mapping)
+
+        if xml_ids != json_ids:
+            raise ValueError(
+                "XML 分块和 JSON 分块的实例 ID 不一致"
+            )
+
+        if xml_ids != mapping_ids:
+            raise ValueError(
+                "XML 分块和 chunk_mapping 的实例 ID 不一致"
+            )
+
+        self.save_chunk_bundle(
+            xml_chunks=xml_chunks,
+            json_chunks=json_chunks,
+            chunk_mapping=chunk_mapping,
+        )
+
+        return chunk_mapping
+
+    def validate_fragment_results(
+        self,
+        fragment_results: list[dict],
+        chunk_mapping: dict,
+    ) -> None:
+        expected_ids = set(chunk_mapping)
+
+        actual_ids = {
+            result.get("instance_node_id")
+            for result in fragment_results
+        }
+
+        missing_ids = expected_ids - actual_ids
+        unexpected_ids = actual_ids - expected_ids
+
+        if missing_ids:
+            raise ValueError(
+                f"缺少分块生成结果: "
+                f"{sorted(missing_ids)}"
+            )
+
+        if unexpected_ids:
+            raise ValueError(
+                f"出现未知分块结果: "
+                f"{sorted(unexpected_ids)}"
+            )
+
+
     # ===================== 新增：主执行函数（整合所有逻辑） =====================
     async def run(
         self, 
@@ -1886,97 +2519,93 @@ class TDVAXMLGenerator:
             ## 记录开始时间
             start_time = time.time()
 
-            # 0. 初始化工作目录
+            # 1. 初始化工作目录
             self.prepare_workspace()
 
-            # 1. 创建索引
-            self.create_indexes()
-            
-            # 2. 生成基础片段
+            # 2. 创建索引
+            self.create_indexes() 
+
+            # 3. 生成模板片段
             fragments = self.generate_fragments()
             if not fragments:
                 raise ValueError("未从Neo4j生成任何片段")
                             
-            # 3. 提取JSON中各节点类型对应的List元素
-            entity_data_map = {}
-            for fragment in fragments:
-                node_name = fragment["node_name"]
-                node_id = fragment["node_id"]
-                entity_data_map[node_id] = extract_nested_entity_data(nested_data=json_data, fragment=fragment)
-           
-
-            # 对全部实体统一分配业务ID
-            entity_data_map = self._inject_ids_into_entity_data_map(
-                entity_data_map
-            )
-    
-            # 保存全局实体ID映射，后续并行生成或失败重试时必须复用这份映射。
-            self.entity_id_registry.save(
-                self.entity_id_map_file
+            # 4. 提取实体数据并预分配业务ID
+            entity_data_map = self.prepare_entity_data_map(
+                json_data=json_data,
+                fragments=fragments,
             )
 
-            logger.info(
-                "实体业务ID预分配完成，共分配 %d 个ID，映射文件：%s",
-                len(self.entity_id_registry.entity_ids),
-                self.entity_id_map_file,
+            # 5. 构建并保存分块
+            chunk_mapping = (
+                self.build_and_save_chunks(
+                    fragments=fragments,
+                    entity_data_map=entity_data_map,
+                )
             )
 
-            # 保存entity_data_map（调试用）
-            #entity_map_file = "./middle_output/entity_data_map.json"
-            Path(self.entity_map_file).write_text(
-                json.dumps(entity_data_map, ensure_ascii=False, indent=2),
-                encoding="utf-8"
+            # 6. 异步填充分块内容
+            fragment_results = (
+                await self.fill_all_chunk_instances(
+                    fragments=fragments,
+                    chunk_mapping=chunk_mapping,
+                )
             )
-            logger.info(f"实体数据映射已保存至: {self.entity_map_file}")
 
-            # 4. 生成多实例分块
-            xml_chunks, json_chunks, chunk_mapping = self.generate_aligned_chunks(fragments, entity_data_map)
-
-            # 统一写入文件
-            self.save_chunk_bundle(
-                xml_chunks=xml_chunks,
-                json_chunks=json_chunks,
+            # 7. 检查分块生成结果
+            self.validate_fragment_results(
+                fragment_results=fragment_results,
                 chunk_mapping=chunk_mapping,
             )
 
-            # 5. 异步填充分块内容
-            fragment_results = await self.fill_all_chunk_instances(fragments, chunk_mapping)
-        
-            # 6. 检查失败实例
-            failed_instances = [r for r in fragment_results if isinstance(r, dict) and r["status"] == "failed"]
-            if failed_instances:
-                sussess_ratio = (len(fragment_results) - len(failed_instances)) / len(fragment_results)
-                logger.warning(f"共{len(failed_instances)}个实例生成失败: {[r['instance_node_id'] for r in failed_instances]}, 生成成功的分块比率为 {sussess_ratio:.2f}")
-            else:
-                logger.info(f"所有实例生成成功!")
-                sussess_ratio = 1
-            
-            # 7. 为每个List元素生成独立XML + 合并完整XML
-            final_xml = self.assemble_final_xml(chunk_mapping)
+            # 8. 组装最终 XML
+            final_xml = self.assemble_final_xml(
+                chunk_mapping=chunk_mapping,
+            )
 
-            final_xml_path = os.path.join(self.final_xml_path, "final_tree.xml")
-            #os._exit(0)
-            with open(final_xml_path, "w", encoding="utf-8") as f:
-                f.write(final_xml)
-            logger.info(f"完整XML树已保存至: {final_xml_path}")
-            
-            end_time = time.time()
-            total_time = end_time - start_time
-            logger.info(f"总耗时: {total_time:.2f} 秒")  
-            with open(self.ex_info_file, "w", encoding="utf-8") as f:
-                f.write(f"总耗时: {total_time:.2f} 秒\n")
-                f.write(f"生成成功的分块比率: {sussess_ratio:.2f}\n")
-                f.write(f"失败实例数量: {len(failed_instances)}\n")
-                f.write(f"失败实例节点ID: {[r['instance_node_id'] for r in failed_instances]}\n")   
-            
-        except Exception as e:
-            logger.error(f"主流程执行失败: {e}\n{traceback.format_exc()}")
+            # 9. 保存最终 XML
+            final_xml_path = self.write_final_xml(
+                final_xml=final_xml,
+            )
+
+            # 10. 保存报告
+            total_time = time.time() - start_time
+
+            report_path = self.write_generation_report(
+                total_time=total_time,
+                fragment_results=fragment_results,
+            )
+
+            failed_count = sum(
+                result.get("status") == "failed"
+                for result in fragment_results
+            )
+        
+            return {
+                "status": (
+                    "success"
+                    if failed_count == 0
+                    else "partial_success"
+                ),
+                "final_xml_path": str(final_xml_path),
+                "chunk_mapping_path": str(
+                    self.chunk_mapping_path
+                ),
+                "entity_map_file": str(
+                    self.entity_map_file
+                ),
+                "report_path": str(report_path),
+                "fragment_results": fragment_results,
+            }
+             
+        except Exception:
+            logger.error(f"主流程执行失败！")
             raise
 
 
 async def main() -> None:
     # 配置参数
-    NEO4J_URI = "bolt://workspace.featurize.cn:20735"
+    NEO4J_URI = "bolt://workspace.featurize.cn:53584"
     NEO4J_USER = "neo4j"
     NEO4J_PASSWORD = "1234567890"
     LLM_BASE_URL = "https://api.siliconflow.cn/v1"
@@ -2022,7 +2651,46 @@ async def main() -> None:
 
     # 执行生成流程
     try:
-        await generator.run(json_data)
+        result = await generator.run(
+            json_data=json_data,
+        )
+
+        logger.info(
+            "XML 生成完成，状态: %s",
+            result["status"],
+        )
+        logger.info(
+            "最终 XML: %s",
+            result["final_xml_path"],
+        )
+        logger.info(
+            "分块映射表: %s",
+            result["chunk_mapping_path"],
+        )
+        logger.info(
+            "生成报告: %s",
+            result["report_path"],
+        )
+
+        failed_results = [
+            item
+            for item in result.get(
+                "fragment_results",
+                [],
+            )
+            if item.get("status") == "failed"
+        ]
+
+        if failed_results:
+            logger.warning(
+                "共有 %d 个分块生成失败",
+                len(failed_results),
+            )
+
+        # 如果 main 需要把结果传给其他调用方，
+        # 可以直接返回 result
+        return result
+
     finally:
         await generator.close()
 
