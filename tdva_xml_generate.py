@@ -12,7 +12,7 @@ import logging
 from pathlib import Path
 import pandas as pd
 import traceback
-from typing import List, Dict, Any, Tuple, Optional, Union
+from typing import List, Dict, Any, Tuple, Optional, Union, Set
 
 from docx import Document
 from markitdown import MarkItDown
@@ -80,7 +80,6 @@ CONTAINER_NODE_NAMES = {
     "Magazines"
 }
 
-
 def sanitize_string(string):
     """
     去除中文字符和冒号，生成合法的XML节点名
@@ -102,7 +101,6 @@ def sanitize_string(string):
         sanitized = f"node_{sanitized}"
     return sanitized
 
-
 def is_nan(value):
     """检查值是否为 NaN/空值
     【修改】新增：支持识别字符串"NaN"、空字符串、空列表等业务空值
@@ -120,7 +118,6 @@ def is_nan(value):
         return value != value  # NaN 不等于自身
     except:
         return False
-
 
 def normalize_string(s: str) -> str:
     """
@@ -149,200 +146,443 @@ def normalize_string(s: str) -> str:
     
     return normalized
 
-
-def extract_nested_entity_data(
-    nested_data: Union[Dict, List], 
-    fragment: List,
-    current_path: List[Union[str, Tuple[str, int]]] = None,
-    parent_key: str = None,
-    current_dict_key: str = None
+def _extract_from_list(
+    nested_data: List,
+    fragment: Dict,
+    current_path: List[
+        Union[str, Tuple[str, int]]
+    ],
+    parent_key: Optional[str] = None,
+    current_dict_key: Optional[str] = None,
+    allowed_parent_nodes: Optional[Set[str]] = None,
 ) -> List[Dict]:
     """
-    递归遍历多层嵌套JSON，精准提取匹配元素并记录树形层级位置
-    【核心修改】适配parent_node_name为字典的场景：
-    - 提取字典所有value作为允许的父节点列表
-    - 只要当前父节点在列表中，即判定匹配成功
+    遍历列表，保持原始列表路径逻辑。
     """
-    matched_data_list = []
-    target_node_name = fragment["node_name"]
-    # ========== 关键修改1：解析允许的父节点列表 ==========
-    parent_node_dict = fragment.get("parent_node_name", {})  # 取出父节点字典
-    # 提取字典所有value，过滤空值后归一化，转为集合（去重+快速匹配）
-    allowed_parent_nodes = set()
-    if isinstance(parent_node_dict, dict):
-        for parent_name in parent_node_dict.values():
-            if isinstance(parent_name, str) and parent_name.strip():
-                normalized_parent = normalize_string(parent_name)
-                if normalized_parent:
-                    allowed_parent_nodes.add(normalized_parent)
+    matched_data_list: List[Dict] = []
 
-    # 初始化路径
+    if allowed_parent_nodes is None:
+        allowed_parent_nodes = set()
+
+    for idx, item in enumerate(nested_data):
+        if parent_key is None:
+            list_tuple = ("unknown", idx)
+        else:
+            list_tuple = (parent_key, idx)
+
+        new_path = current_path.copy()
+        new_path.append(list_tuple)
+
+        recursive_result = (
+            _extract_nested_entity_data_by_type(
+                nested_data=item,
+                fragment=fragment,
+                current_path=new_path,
+                parent_key=None,
+                current_dict_key=current_dict_key,
+                allowed_parent_nodes=(
+                    allowed_parent_nodes
+                ),
+            )
+        )
+
+        if recursive_result:
+            matched_data_list.extend(
+                recursive_result
+            )
+
+    return matched_data_list
+
+def _build_matched_entity_data(
+    matched_key: str,
+    target_value,
+    fragment: Dict,
+    current_path: List[
+        Union[str, Tuple[str, int]]
+    ],
+    current_dict_key: Optional[str] = None,
+) -> List[Dict]:
+    """
+    构造匹配节点的实体数据。
+
+    该函数不负责递归，只负责：
+    - 提取 dict 中的标量字段；
+    - 处理 list 中的 dict；
+    - 处理 list 中的 str；
+    - 构造路径元数据。
+    """
+    matched_data_list: List[Dict] = []
+
+    def format_path_item(
+        path_item: Union[str, Tuple[str, int]]
+    ) -> str:
+        if isinstance(path_item, tuple):
+            return (
+                f"{path_item[0]}[{path_item[1]}]"
+            )
+
+        return str(path_item)
+
+    def add_path_metadata(
+        entity_data: Dict,
+        position: List[
+            Union[str, Tuple[str, int]]
+        ],
+    ) -> None:
+        entity_data["_position"] = position
+
+        if len(position) > 1:
+            parent_position = position[-2]
+
+            if isinstance(parent_position, tuple):
+                entity_data["_parent_json_key"] = (
+                    f"{parent_position[0]}"
+                    f"[{parent_position[1]}]"
+                )
+            else:
+                entity_data["_parent_json_key"] = (
+                    parent_position
+                )
+        else:
+            entity_data["_parent_json_key"] = None
+
+        entity_data["_full_path_str"] = (
+            " -> ".join(
+                format_path_item(item)
+                for item in position
+            )
+        )
+
+    # target_value 是字典
+    if isinstance(target_value, dict):
+        entity_data = {
+            key: value
+            for key, value in target_value.items()
+            if not isinstance(value, dict)
+            and not isinstance(value, list)
+        }
+
+        position = current_path + [matched_key]
+
+        add_path_metadata(
+            entity_data=entity_data,
+            position=position,
+        )
+
+        matched_data_list.append(
+            {
+                matched_key: entity_data,
+            }
+        )
+
+    # target_value 是列表
+    elif (
+        isinstance(target_value, list)
+        and len(target_value) > 0
+    ):
+        for idx, item in enumerate(target_value):
+            position = current_path + [
+                (matched_key, idx)
+            ]
+
+            # 列表元素是字典
+            if isinstance(item, dict):
+                entity_data = {
+                    key: value
+                    for key, value in item.items()
+                    if not isinstance(value, dict)
+                    and not isinstance(value, list)
+                }
+
+                add_path_metadata(
+                    entity_data=entity_data,
+                    position=position,
+                )
+
+                matched_data_list.append(
+                    {
+                        matched_key: entity_data,
+                    }
+                )
+
+            # 列表元素是字符串
+            elif isinstance(item, str):
+                entity_data = {
+                    "Name": item,
+                }
+
+                add_path_metadata(
+                    entity_data=entity_data,
+                    position=position,
+                )
+
+                matched_data_list.append(
+                    {
+                        matched_key: entity_data,
+                    }
+                )
+
+    return matched_data_list
+
+def _extract_from_dict(
+    nested_data: Dict,
+    fragment: Dict,
+    current_path: List[
+        Union[str, Tuple[str, int]]
+    ],
+    parent_key: Optional[str] = None,
+    current_dict_key: Optional[str] = None,
+    allowed_parent_nodes: Optional[Set[str]] = None,
+) -> List[Dict]:
+    """
+    遍历字典，保持原始递归行为：
+    1. 查找当前字典中的匹配 key；
+    2. 处理匹配节点；
+    3. 继续递归当前字典中的所有 value。
+    """
+    matched_data_list: List[Dict] = []
+
+    if allowed_parent_nodes is None:
+        allowed_parent_nodes = set()
+
+    target_node_name = fragment["node_name"]
+    target_normalized = normalize_string(
+        target_node_name
+    )
+
+    if not target_normalized:
+        return matched_data_list
+
+    matched_key: Optional[str] = None
+
+    # 查找当前字典中与目标节点名称匹配的 key
+    for key in nested_data.keys():
+        if not isinstance(key, str):
+            continue
+
+        key_normalized = normalize_string(key)
+
+        if not key_normalized:
+            continue
+
+        if key_normalized == target_normalized:
+            matched_key = key
+
+    # 处理当前字典中匹配到的节点
+    if matched_key is not None:
+        current_parent_name = ""
+
+        if current_path:
+            parent_path_item = current_path[-1]
+
+            if isinstance(parent_path_item, tuple):
+                current_parent_name = parent_path_item[0]
+
+            elif isinstance(parent_path_item, str):
+                current_parent_name = parent_path_item
+
+        current_parent_normalized = normalize_string(
+            current_parent_name
+        )
+
+        # 父节点限制校验
+        if (
+            allowed_parent_nodes
+            and current_parent_normalized
+            not in allowed_parent_nodes
+        ):
+            logger.info(
+                "节点[%s]父节点[%s]不在允许列表[%s]中，跳过",
+                matched_key,
+                current_parent_name,
+                allowed_parent_nodes,
+            )
+
+            # 保持原始逻辑：
+            # 父节点不匹配时，继续遍历当前 nested_data 的所有 value，
+            # 但不处理当前匹配节点本身，然后直接返回。
+            for key, value in nested_data.items():
+                if isinstance(value, dict):
+                    recursive_path = (
+                        current_path + [key]
+                    )
+                    recursive_dict_key = key
+                else:
+                    recursive_path = (
+                        current_path.copy()
+                    )
+                    recursive_dict_key = (
+                        current_dict_key
+                    )
+
+                recursive_result = (
+                    _extract_nested_entity_data_by_type(
+                        nested_data=value,
+                        fragment=fragment,
+                        current_path=recursive_path,
+                        parent_key=(
+                            key
+                            if isinstance(value, list)
+                            else None
+                        ),
+                        current_dict_key=(
+                            recursive_dict_key
+                        ),
+                        allowed_parent_nodes=(
+                            allowed_parent_nodes
+                        ),
+                    )
+                )
+
+                if recursive_result:
+                    matched_data_list.extend(
+                        recursive_result
+                    )
+
+            return matched_data_list
+
+        # 父节点校验通过，构造当前匹配节点结果
+        target_value = nested_data[matched_key]
+
+        matched_result = (
+            _build_matched_entity_data(
+                matched_key=matched_key,
+                target_value=target_value,
+                fragment=fragment,
+                current_path=current_path,
+                current_dict_key=current_dict_key,
+            )
+        )
+
+        if matched_result:
+            matched_data_list.extend(
+                matched_result
+            )
+
+        # 注意：
+        # 这里不能 continue。
+        # 原始逻辑在处理匹配节点后，
+        # 仍然会继续递归当前字典的所有 value。
+
+    # 递归遍历当前字典中的所有 value
+    for key, value in nested_data.items():
+        if isinstance(value, dict):
+            recursive_path = current_path + [key]
+            recursive_dict_key = key
+        else:
+            recursive_path = current_path.copy()
+            recursive_dict_key = current_dict_key
+
+        recursive_result = (
+            _extract_nested_entity_data_by_type(
+                nested_data=value,
+                fragment=fragment,
+                current_path=recursive_path,
+                parent_key=(
+                    key
+                    if isinstance(value, list)
+                    else None
+                ),
+                current_dict_key=recursive_dict_key,
+                allowed_parent_nodes=(
+                    allowed_parent_nodes
+                ),
+            )
+        )
+
+        if recursive_result:
+            matched_data_list.extend(
+                recursive_result
+            )
+
+    return matched_data_list
+
+def _extract_nested_entity_data_by_type(
+    nested_data: Union[Dict, List],
+    fragment: Dict,
+    current_path: List[
+        Union[str, Tuple[str, int]]
+    ],
+    parent_key: Optional[str] = None,
+    current_dict_key: Optional[str] = None,
+    allowed_parent_nodes: Optional[Set[str]] = None,
+) -> List[Dict]:
+    """
+    根据数据类型分发到字典或列表处理函数。
+    """
+    if allowed_parent_nodes is None:
+        allowed_parent_nodes = set()
+
+    if isinstance(nested_data, dict):
+        return _extract_from_dict(
+            nested_data=nested_data,
+            fragment=fragment,
+            current_path=current_path,
+            parent_key=parent_key,
+            current_dict_key=current_dict_key,
+            allowed_parent_nodes=allowed_parent_nodes,
+        )
+
+    if isinstance(nested_data, list):
+        return _extract_from_list(
+            nested_data=nested_data,
+            fragment=fragment,
+            current_path=current_path,
+            parent_key=parent_key,
+            current_dict_key=current_dict_key,
+            allowed_parent_nodes=allowed_parent_nodes,
+        )
+
+    return []
+
+
+def extract_nested_entity_data(
+    nested_data: Union[Dict, List],
+    fragment: Dict,
+    current_path: Optional[
+        List[Union[str, Tuple[str, int]]]
+    ] = None,
+    parent_key: Optional[str] = None,
+    current_dict_key: Optional[str] = None,
+) -> List[Dict]:
+    """
+    对外入口函数。
+    """
     if current_path is None:
         current_path = []
     else:
-        current_path = current_path.copy()    
-    # 递归终止条件
-    if not isinstance(nested_data, (dict, list)):
-        return matched_data_list
-    
-    # 预处理目标节点（归一化）
-    target_normalized = normalize_string(target_node_name)
-    if not target_normalized:
-        return matched_data_list
-    
-    # 处理字典类型
-    if isinstance(nested_data, dict):
-        matched_key = None
-        
-        # 1. 找到语义匹配的key
-        for key in nested_data.keys():
-            if not isinstance(key, str):
-                continue
-            key_normalized = normalize_string(key)
-            if not key_normalized:
-                continue
-            if key_normalized == target_normalized:
-                matched_key = key
-        
-        # 2. 处理匹配到的key对应值（父节点校验+精准记录层级）
-        if matched_key:
-            # ===== 解析当前节点的父节点名称（原有逻辑保留）=====
-            current_parent_name = ""
-            if current_path:
-                parent_path_item = current_path[-1]
-                if isinstance(parent_path_item, tuple):
-                    current_parent_name = parent_path_item[0]
-                elif isinstance(parent_path_item, str):
-                    current_parent_name = parent_path_item
-            # 归一化当前父节点名称
-            current_parent_normalized = normalize_string(current_parent_name)
-            
-            # ========== 关键修改2：多父节点匹配校验 ==========
-            if allowed_parent_nodes:  # 允许的父节点列表非空时才校验
-                if current_parent_normalized not in allowed_parent_nodes:
-                    # 父节点不在允许列表中，跳过该节点
-                    logger.info(
-                        f"节点[{matched_key}]父节点[{current_parent_name}]不在允许列表[{allowed_parent_nodes}]中，跳过"
+        current_path = current_path.copy()
+
+    parent_node_dict = fragment.get(
+        "parent_node_name",
+        {},
+    )
+
+    allowed_parent_nodes: Set[str] = set()
+
+    if isinstance(parent_node_dict, dict):
+        for parent_name in parent_node_dict.values():
+            if (
+                isinstance(parent_name, str)
+                and parent_name.strip()
+            ):
+                normalized_parent = normalize_string(
+                    parent_name
+                )
+
+                if normalized_parent:
+                    allowed_parent_nodes.add(
+                        normalized_parent
                     )
 
-                    # 继续递归遍历子节点（不影响后续匹配）
-                    for key, value in nested_data.items():
-                        if isinstance(value, dict):
-                            recursive_path = current_path + [key]
-                            recursive_dict_key = key
-                            
-                        else:
-                            recursive_path = current_path.copy()
-                            recursive_dict_key = current_dict_key
-                            
-                        recursive_result = extract_nested_entity_data(
-                            value, fragment, recursive_path,
-                            parent_key=key if isinstance(value, list) else None,
-                            current_dict_key=recursive_dict_key
-                        )
-                        if recursive_result:
-                            matched_data_list.extend(recursive_result)
-                    return matched_data_list  # 父节点不匹配，直接返回
-            
-
-            # ===== 原有逻辑：处理匹配节点的value =====
-            target_value = nested_data[matched_key]     
-            if isinstance(target_value, dict):
-                target_value_ = {key:target_value[key] for key in target_value.keys() if not isinstance(target_value[key], dict) and not isinstance(target_value[key], list)}
-                target_value_["_position"] = current_path + [matched_key]
-                
-                if len(target_value_["_position"]) > 1:
-                    if isinstance(target_value_["_position"][-2], tuple):
-                        tuple_value = target_value_["_position"][-2]
-                        target_value_["_parent_json_key"] = f"{tuple_value[0]}[{tuple_value[1]}]"
-                    else:
-                        target_value_["_parent_json_key"] = target_value_["_position"][-2]
-                else:
-                    target_value_["_parent_json_key"] = None
-                    
-                target_value_["_full_path_str"] = " -> ".join([
-                    str(p) if not isinstance(p, tuple) else f"{p[0]}[{p[1]}]" 
-                    for p in current_path + [matched_key]
-                ])
-                matched_data_list.append({matched_key:target_value_})
-            
-            elif isinstance(target_value, list) and len(target_value) > 0:
-                for idx, item in enumerate(target_value):
-                    if isinstance(item, dict):
-                        item_ = {key:item[key] for key in item.keys() if not isinstance(item[key], dict) and not isinstance(item[key], list)}
-                        item_["_position"] = current_path + [(matched_key, idx)]
-                        
-                        if len(item_["_position"]) > 1:
-                            if isinstance(item_["_position"][-2], tuple):
-                                tuple_value = item_["_position"][-2]
-                                item_["_parent_json_key"] = f"{tuple_value[0]}[{tuple_value[1]}]"
-                            else:
-                                item_["_parent_json_key"] = item_["_position"][-2]
-                        else:
-                            item_["_parent_json_key"] = None
-                        
-                        item_["_full_path_str"] = " -> ".join([
-                            str(p) if not isinstance(p, tuple) else f"{p[0]}[{p[1]}]" 
-                            for p in current_path + [(matched_key, idx)]
-                        ])
-                        matched_data_list.append({matched_key: item_})
-
-                    elif isinstance(item, str):
-                        item_ = {"Name":item}
-                        item_["_position"] = current_path + [(matched_key, idx)]
-                        
-                        if len(item_["_position"]) > 1:
-                            if isinstance(item_["_position"][-2], tuple):
-                                tuple_value = item_["_position"][-2]
-                                item_["_parent_json_key"] = f"{tuple_value[0]}[{tuple_value[1]}]"
-                            else:
-                                item_["_parent_json_key"] = item_["_position"][-2]
-                        else:
-                            item_["_parent_json_key"] = None
-
-                        item_["_full_path_str"] = " -> ".join([
-                            str(p) if not isinstance(p, tuple) else f"{p[0]}[{p[1]}]" 
-                            for p in current_path + [(matched_key, idx)]
-                        ])
-                        matched_data_list.append({matched_key: item_})
-
-        # 3. 递归遍历字典所有值（原有逻辑保留）
-        for key, value in nested_data.items():
-            if isinstance(value, dict):
-                recursive_path = current_path + [key]
-                recursive_dict_key = key
-            else:
-                recursive_path = current_path.copy()
-                recursive_dict_key = current_dict_key
-            recursive_result = extract_nested_entity_data(
-                value, fragment, recursive_path,
-                parent_key=key if isinstance(value, list) else None,
-                current_dict_key=recursive_dict_key
-            )
-            if recursive_result:
-                matched_data_list.extend(recursive_result)
-    
-    # 处理列表类型（原有逻辑保留）
-    elif isinstance(nested_data, list):
-        for idx, item in enumerate(nested_data):
-            if parent_key is None:
-                list_tuple = ("unknown", idx)
-            else:
-                list_tuple = (parent_key, idx)
-            
-            new_path = current_path.copy()
-            new_path.append(list_tuple)
-            
-            recursive_result = extract_nested_entity_data(
-                item, fragment, new_path,
-                parent_key=None,
-                current_dict_key=current_dict_key
-            )
-            if recursive_result:
-                matched_data_list.extend(recursive_result)
-    
-    return matched_data_list
-
+    return _extract_nested_entity_data_by_type(
+        nested_data=nested_data,
+        fragment=fragment,
+        current_path=current_path,
+        parent_key=parent_key,
+        current_dict_key=current_dict_key,
+        allowed_parent_nodes=allowed_parent_nodes,
+    )
 
 
 # 格式化XML（移除编码声明，直接生成带缩进的Unicode字符串）
@@ -360,7 +600,6 @@ def serialize_xml_element(elem: etree._Element, indent: str = "  ") -> str:
     xml_str = xml_bytes.decode('utf-8')
     clean_xml = "\n".join([line for line in xml_str.split("\n") if line.strip()])
     return clean_xml
-
 
 
 @dataclass
@@ -1086,125 +1325,303 @@ class TDVAXMLGenerator:
         return serialize_xml_element(node_element)
 
 
+    def _load_children_map(self) -> Dict[int, List[Dict]]:
+        """查询并按父节点 ID 分组直接子节点。"""
+        children_query = """
+            MATCH (parent)-[:CONTAINS]->(child:Node)
+            WHERE parent:Node OR parent:Root_Node
+            RETURN id(parent) AS parent_id,
+                    id(child) AS child_id,
+                    child.name AS child_name
+        """
+
+        children_data = (
+            self.neo4j_graph
+            .run(children_query)
+            .data()
+        )
+
+        children_map: Dict[int, List[Dict]] = {}
+
+        for item in children_data:
+            parent_id = item["parent_id"]
+
+            if parent_id not in children_map:
+                children_map[parent_id] = []
+
+            children_map[parent_id].append(
+                {
+                    "child_id": item["child_id"],
+                    "child_name": item["child_name"],
+                }
+            )
+
+        return children_map
+
+
+    def _load_root_data(self) -> Optional[Dict]:
+        """查询根节点及其字段属性。"""
+        root_query = """
+            MATCH (root:Root_Node)-[:HAS_FIELD]->(field:Field)
+            RETURN root.name AS node_name,
+                root.description AS node_des,
+                id(root) AS node_id,
+                COLLECT({
+                    name: field.name,
+                    des: field.description,
+                    note: field.note,
+                    example: field.example
+                }) AS attributes
+        """
+
+        root_result = (
+            self.neo4j_graph
+            .run(root_query)
+            .data()
+        )
+
+        if not root_result:
+            return None
+
+        return root_result[0]
+
+    def _build_root_fragment(
+        self,
+        root_data: Dict,
+        children_map: Dict[int, List[Dict]],
+    ) -> Dict:
+        """根据根节点查询结果构造根 fragment。"""
+        root_node_id = root_data["node_id"]
+
+        return {
+            "node_id": root_node_id,
+            "node_name": root_data["node_name"],
+            "node_des": root_data["node_des"],
+            "parent_node_id": None,
+            "parent_node_name": None,
+            "node_type": "Root_Node",
+            "attributes": root_data["attributes"],
+            "children": children_map.get(
+                root_node_id,
+                [],
+            ),
+            "is_root": True,
+        }
+
+
+    def _load_node_data(
+        self,
+        node_ids: List[int],
+    ) -> List[Dict]:
+        """批量查询普通 Node 节点及其属性。"""
+        batch_query = """
+            UNWIND $node_ids AS node_id
+            MATCH (n:Node) WHERE id(n) = node_id
+            OPTIONAL MATCH (parent)-[:CONTAINS]->(n)
+            OPTIONAL MATCH (n)-[:HAS_FIELD]->(field:Field)
+            RETURN node_id,
+                n.name AS node_name,
+                n.description AS node_des,
+                COLLECT(DISTINCT id(parent)) AS parent_ids,
+                COLLECT({
+                    name: field.name,
+                    des: field.description,
+                    note: field.note,
+                    example: field.example
+                }) AS attributes
+        """
+
+        return (
+            self.neo4j_graph
+            .run(
+                batch_query,
+                node_ids=node_ids,
+            )
+            .data()
+        )
+
+    def _deduplicate_attributes(
+        self,
+        attributes: List[Dict],
+    ) -> List[Dict]:
+        """按字段 name 去重，保留第一次出现的字段。"""
+        unique_attributes: List[Dict] = []
+        field_names = set()
+
+        for attr in attributes:
+            field_name = attr["name"]
+
+            if field_name in field_names:
+                continue
+
+            field_names.add(field_name)
+            unique_attributes.append(attr)
+
+        return unique_attributes
+
+
+    def _build_node_fragment(
+        self,
+        node: Dict,
+        root_data: Dict,
+        children_map: Dict[int, List[Dict]],
+        id2name: Dict[int, str],
+        existing_fragments: List[Dict],
+    ) -> Optional[Dict]:
+        """根据单个 Neo4j 节点构造普通 fragment。"""
+        node_id = node["node_id"]
+        root_node_id = root_data["node_id"]
+
+        parent_ids = node.get(
+            "parent_ids",
+            [],
+        )
+
+        # 保留原有逻辑：
+        # 非根节点没有父节点时跳过
+        if (
+            node_id != root_node_id
+            and len(parent_ids) == 0
+        ):
+            return None
+
+        parent_node_id = [
+            (
+                "node_root"
+                if parent_id == root_node_id
+                else parent_id
+            )
+            for parent_id in parent_ids
+            if parent_id
+        ]
+
+        children = children_map.get(
+            node_id,
+            [],
+        )
+
+        # 保留原有逻辑：根节点已经加入 fragments，
+        # 后续遇到同 ID 的节点时跳过
+        if any(
+            fragment["node_id"] == node_id
+            for fragment in existing_fragments
+        ):
+            return None
+
+        unique_attributes = (
+            self._deduplicate_attributes(
+                node.get("attributes", [])
+            )
+        )
+
+        return {
+            "node_id": node_id,
+            "node_name": node["node_name"],
+            "parent_node_id": parent_node_id,
+            "parent_node_name": {
+                parent_id: id2name.get(parent_id)
+                for parent_id in parent_node_id
+            },
+            "node_type": "Node",
+            "attributes": unique_attributes,
+            "children": children,
+            "is_root": False,
+        }
+
+
     def generate_fragments(self) -> List[Dict]:
         """基于图结构生成XML片段"""
-        fragments = []
+        fragments: List[Dict] = []
         self.id_map = {}
         
         try:
-            # 1. 获取所有节点的直接子节点
-            children_query = """
-                MATCH (parent)-[:CONTAINS]->(child:Node)
-                WHERE parent:Node OR parent:Root_Node
-                RETURN id(parent) AS parent_id, 
-                        id(child) AS child_id,
-                        child.name AS child_name 
-            """
-            children_data = self.neo4j_graph.run(children_query).data()
-            # 按父节点ID分组子节点
-            children_map = {}
-            for item in children_data:
-                parent_id = item["parent_id"]
-                if parent_id not in children_map:
-                    children_map[parent_id] = []
-                children_map[parent_id].append({
-                    "child_id": item["child_id"],
-                    "child_name": item["child_name"]
-                })
+            # 1. 查询所有直接子节点关系
+            children_map = self._load_children_map()
 
-            # 2. 获取根节点
-            root_query = """
-                MATCH (root:Root_Node)-[:HAS_FIELD]->(field:Field)
-                RETURN root.name AS node_name,
-                    root.description AS node_des,
-                    id(root) AS node_id,
-                    COLLECT({name: field.name, des: field.description, note: field.note, example: field.example}) AS attributes
-            """
-            root_result = self.neo4j_graph.run(root_query).data()
-            
-            if root_result:
-                root_data = root_result[0]
-                fragments.append({
-                    "node_id": root_data["node_id"],
-                    "node_name": root_data["node_name"],
-                    "node_des": root_data["node_des"],
-                    "parent_node_id": None,
-                    "parent_node_name": None,
-                    "node_type": "Root_Node",
-                    "attributes": root_data["attributes"],
-                    "children": children_map.get(root_data["node_id"], []),
-                    "is_root": True
-                })
-                self.id_map[root_data["node_id"]] = f"fragment_{root_data['node_id']}.xml"
-                logger.info(f"找到根节点: {root_data['node_name']} (ID: {root_data['node_id']})")
+            # 2. 查询根节点
+            root_data = self._load_root_data()
 
-            # 3. 批量获取所有节点及其属性
-            node_ids = [frag["node_id"] for frag in fragments]
-            node_ids.extend(self._get_all_node_ids())
-            
-            batch_query = """
-                UNWIND $node_ids AS node_id
-                MATCH (n:Node) WHERE id(n) = node_id
-                OPTIONAL MATCH (parent)-[:CONTAINS]->(n)
-                OPTIONAL MATCH (n)-[:HAS_FIELD]->(field:Field)
-                RETURN node_id, 
-                    n.name AS node_name,
-                    n.description AS node_des,
-                    COLLECT(DISTINCT id(parent)) AS parent_ids,
-                    COLLECT({name: field.name, des: field.description, note: field.note, example: field.example}) AS attributes
-            """
-            nodes = self.neo4j_graph.run(batch_query, node_ids=node_ids).data()
-            
-            # 4. 构建片段
-            id2name = {node["node_id"]: node["node_name"] for node in nodes}
-            id2name[root_data["node_id"]] =  root_data["node_name"]
+            if root_data is None:
+                logger.warning(
+                    "未查询到根节点，无法生成 XML 片段"
+                )
+                return []
 
+            root_fragment = self._build_root_fragment(
+                root_data=root_data,
+                children_map=children_map,
+            )
+            
+            fragments.append(root_fragment)
+            self.id_map[
+                root_data["node_id"]
+            ] = f"fragment_{root_data['node_id']}.xml"
+
+            logger.info(
+                "找到根节点: %s (ID: %s)",
+                root_data["node_name"],
+                root_data["node_id"],
+            )
+
+            # 3. 批量查询普通节点及其属性
+            node_ids = [
+                fragment["node_id"]
+                for fragment in fragments
+            ]
+            node_ids.extend(
+                self._get_all_node_ids()
+            )
+
+            nodes = self._load_node_data(
+                node_ids=node_ids
+            )
+            
+            # 保留原有的 ID 到名称映射逻辑
+            id2name = {
+                node["node_id"]: node["node_name"]
+                for node in nodes
+            }
+            id2name[
+                root_data["node_id"]
+            ] = root_data["node_name"]
+
+            # 4. 构建普通节点片段
             for node in nodes:
-                node_id = node["node_id"]
-                # 获取父节点ID（取第一个父节点）
-                parent_ids = node.get("parent_ids", [])
-                if node_id != root_data["node_id"] and len(parent_ids) == 0:
-                    continue
+                fragment = self._build_node_fragment(
+                    node=node,
+                    root_data=root_data,
+                    children_map=children_map,
+                    id2name=id2name,
+                    existing_fragments=fragments,
+                )
 
-                parent_node_id = ['node_root' if parent_id == root_data['node_id'] else parent_id for parent_id in parent_ids if parent_id]
-                
-                children = children_map.get(node_id, [])
-
-                # 跳过已处理的根节点
-                if any(frag["node_id"] == node_id for frag in fragments):
+                if fragment is None:
                     continue
-                
-                ###  对field节点去重
-                unique_attributes = list()
-                field_name = list()
-                for attr in node["attributes"]:
-                    if attr['name'] not in field_name:
-                        field_name.append(attr['name'])
-                        unique_attributes.append(attr)
-            
-                fragment = {
-                    "node_id": node_id,
-                    "node_name": node["node_name"],
-                    "parent_node_id": parent_node_id,
-                    "parent_node_name": {id: id2name.get(id) for id in parent_node_id},
-                    #"node_type": sanitize_string(node["node_name"]),
-                    "node_type": "Node",
-                    "attributes": unique_attributes,
-                    "children": children,
-                    "is_root": False
-                }
-                    
 
                 fragments.append(fragment)
-                self.id_map[node_id] = f"fragment_{node_id}.xml"
-            
-            logger.info(f"共生成 {len(fragments)} 个基础XML片段")
+
+                node_id = fragment["node_id"]
+                self.id_map[node_id] = (
+                    f"fragment_{node_id}.xml"
+                )
+
+            logger.info(
+                "共生成 %d 个基础 XML 片段",
+                len(fragments),
+            )
+
             return fragments
             
-        except Exception as e:
-            logger.error(f"生成片段失败: {e}\n{traceback.format_exc()}")
+        except Exception as exc:
+            logger.error(
+                "生成片段失败: %s\n%s",
+                exc,
+                traceback.format_exc(),
+            )
             return []
-    
+
+
+
     def _get_all_node_ids(self) -> List[int]:
         """获取所有Node节点的ID"""
         query = "MATCH (n:Node) RETURN id(n) AS node_id"
