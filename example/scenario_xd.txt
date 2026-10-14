@@ -1,0 +1,1104 @@
+<?xml version="1.0" encoding="GB18030"?>
+<ScenarioData>
+    <BackGround Type="ScenarioBackground" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="-1">
+        <名称 Name="Name" Type="Tsstring" TypeFlag="0">测试想定</名称>
+        <描述 Name="Description" Type="Tsstring" TypeFlag="0">测试想定的仿真脚本样例</描述>
+        <作战开始时间 Name="StartTime" Type="TsDateTime" TypeFlag="0">2026-01-01 08:00:00</作战开始时间>
+        <作战结束时间 Name="EndTime" Type="TsDateTime" TypeFlag="0">2026-01-01 18:00:00</作战结束时间>
+        <仿真步长 Name="SimulationStep" Type="double" TypeFlag="0">1.0</仿真步长>
+        <地图范围 Name="MapExtent" Type="MapExtent" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="-1">
+            <右标定点纬度 Name="RightLatitude" Type="double" TypeFlag="0">0.730000</右标定点纬度>
+            <左标定点纬度 Name="LeftLatitude" Type="double" TypeFlag="0">0.740000</左标定点纬度>
+            <右标定点经度 Name="RightLongitude" Type="double" TypeFlag="0">10.430000</右标定点经度>
+            <左标定点经度 Name="LeftLongitude" Type="double" TypeFlag="0">10.440000</左标定点经度>
+        </地图范围>
+        <场景地形信息 Name="TerrainName" Type="Tsstring" TypeFlag="0">default</场景地形信息>
+        <内码 Name="ScenarioCode" Type="Tsstring" TypeFlag="0">SCENARIO-20260101-0001</内码>
+        <部署层名称列表 Name="LayerNames" Type="TsList" TypeFlag="0" Count="2">
+            <Item_0 Name="Item_0" Type="Tsstring" TypeFlag="0">基础层</Item_0>
+            <Item_1 Name="Item_1" Type="Tsstring" TypeFlag="0">作战实体层</Item_1>
+        </部署层名称列表>
+        <版本号 Name="Version" Type="Tsstring" TypeFlag="0">1.0.0</版本号>
+    </BackGround>
+    <IdentMgr Name="IdentMgr" Type="IdentifierManager" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="-1">
+        <标识列表 Name="IdentifierList" Type="TsList" TypeFlag="0" Count="2">
+            <Item_0 Type="Identifier" TypeFlag="0">
+                <标识名称 Name="IdentifierName" Type="Tsstring" TypeFlag="0">红方</标识名称>
+                <标识颜色 Name="IdentifierColor" Type="uint" TypeFlag="0">4278190335</标识颜色>
+            </Item_0>
+            <Item_1 Type="Identifier" TypeFlag="0">
+                <标识名称 Name="IdentifierName" Type="Tsstring" TypeFlag="0">蓝方</标识名称>
+                <标识颜色 Name="IdentifierColor" Type="uint" TypeFlag="0">4294901760</标识颜色>
+            </Item_1>
+        </标识列表>
+        <关系列表 Name="RelationList" Type="TsList" TypeFlag="0" Count="1">
+            <Item_0 Type="IdentifierRelation" TypeFlag="0">
+                <标识名称1 Name="IdentifierName1" Type="Tsstring" TypeFlag="0">红方</标识名称1>
+                <标识名称2 Name="IdentifierName2" Type="Tsstring" TypeFlag="0">蓝方</标识名称2>
+                <关系 Name="Relation" Type="int" TypeFlag="0">1</关系>
+            </Item_0>
+        </关系列表>
+    </IdentMgr>
+    <层 Name="LayerManager" Type="LayerManager" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="-1">
+        <主题列表 Name="TopicList" Type="TsList" TypeFlag="0">实体主题</主题列表>
+        <层信息 Name="LayerInfo" Type="LayerInfo" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="-1">
+            <名称 Name="LayerName" Type="Tsstring" TypeFlag="0">作战实体层</名称>
+            <描述 Name="LayerDescription" Type="Tsstring" TypeFlag="0">用于保存仿真作战实体</描述>
+            <层起始句柄索引 Name="LayerStartHandle" Type="int" TypeFlag="0">0</层起始句柄索引>
+            <层结束句柄索引 Name="LayerEndHandle" Type="int" TypeFlag="0">33</层结束句柄索引>
+            <层对家句柄列表 Name="LayerPeerHandles" Type="TsList" TypeFlag="0" Count="0" />
+            <附加参数 Name="ExtraParameters" Type="Tsstring" TypeFlag="0">EntityLayer=true</附加参数>
+        </层信息>
+    </层>
+    <DataList Type="ScenarioDataList" TypeFlag="0">
+        <主题列表 Name="TopicList" Type="TsList" TypeFlag="0" Count="34">
+            <!-- Item_0：编组节点 -->
+            <Item_0 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="0">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">编组</主题名称>
+                <主题数据 Name="TopicData" Type="Formation" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="0">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">formation-red-0001</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">红方编成</名称>
+                    <标识 Name="Identifier" Type="Tsstring" TypeFlag="0">红方</标识>
+                    <顶端节点 Name="TopNode" Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="Tsstring" TypeFlag="0">formation-red-0001</Item_0>
+                    </顶端节点>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="33">
+                        <Item_0 Type="Tsstring" TypeFlag="0">unit-red-0001</Item_0>
+                        <Item_1 Type="Tsstring" TypeFlag="0">unit-red-0002</Item_1>
+                        <Item_2 Type="Tsstring" TypeFlag="0">unit-red-0003</Item_2>
+                        <Item_3 Type="Tsstring" TypeFlag="0">unit-red-0004</Item_3>
+                        <Item_4 Type="Tsstring" TypeFlag="0">unit-red-0005</Item_4>
+                        <Item_5 Type="Tsstring" TypeFlag="0">unit-red-0006</Item_5>
+                        <Item_6 Type="Tsstring" TypeFlag="0">unit-red-0007</Item_6>
+                        <Item_7 Type="Tsstring" TypeFlag="0">unit-red-0008</Item_7>
+                        <Item_8 Type="Tsstring" TypeFlag="0">unit-red-0009</Item_8>
+                        <Item_9 Type="Tsstring" TypeFlag="0">unit-red-0010</Item_9>
+                        <Item_10 Type="Tsstring" TypeFlag="0">unit-red-0011</Item_10>
+                        <Item_11 Type="Tsstring" TypeFlag="0">unit-red-0012</Item_11>
+                        <Item_12 Type="Tsstring" TypeFlag="0">unit-red-0013</Item_12>
+                        <Item_13 Type="Tsstring" TypeFlag="0">unit-red-0014</Item_13>
+                        <Item_14 Type="Tsstring" TypeFlag="0">unit-red-0015</Item_14>
+                        <Item_15 Type="Tsstring" TypeFlag="0">unit-red-0016</Item_15>
+                        <Item_16 Type="Tsstring" TypeFlag="0">unit-red-0017</Item_16>
+                        <Item_17 Type="Tsstring" TypeFlag="0">unit-red-0018</Item_17>
+                        <Item_18 Type="Tsstring" TypeFlag="0">unit-red-0019</Item_18>
+                        <Item_19 Type="Tsstring" TypeFlag="0">unit-red-0020</Item_19>
+                        <Item_20 Type="Tsstring" TypeFlag="0">unit-red-0021</Item_20>
+                        <Item_21 Type="Tsstring" TypeFlag="0">unit-red-0022</Item_21>
+                        <Item_22 Type="Tsstring" TypeFlag="0">unit-red-0023</Item_22>
+                        <Item_23 Type="Tsstring" TypeFlag="0">unit-red-0024</Item_23>
+                        <Item_24 Type="Tsstring" TypeFlag="0">unit-red-0025</Item_24>
+                        <Item_25 Type="Tsstring" TypeFlag="0">unit-red-0026</Item_25>
+                        <Item_26 Type="Tsstring" TypeFlag="0">unit-red-0027</Item_26>
+                        <Item_27 Type="Tsstring" TypeFlag="0">unit-red-0028</Item_27>
+                        <Item_28 Type="Tsstring" TypeFlag="0">unit-red-0029</Item_28>
+                        <Item_29 Type="Tsstring" TypeFlag="0">unit-red-0030</Item_29>
+                        <Item_30 Type="Tsstring" TypeFlag="0">unit-red-0031</Item_30>
+                        <Item_31 Type="Tsstring" TypeFlag="0">unit-red-0032</Item_31>
+                        <Item_32 Type="Tsstring" TypeFlag="0">unit-red-0033</Item_32>
+                    </下级标识>
+                    <下级数量 Type="int" TypeFlag="0">33</下级数量>
+                </主题数据>
+            </Item_0>
+            <!-- Item_1 至 Item_33：实体节点 -->
+            <Item_1 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="1">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="1">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0001</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克一排一号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T01</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0001</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">1</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0001</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">100.0,200.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_1>
+            <Item_2 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="2">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="2">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0002</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克一排二号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T02</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0002</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">2</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0002</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">120.0,200.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_2>
+            <!-- 以下实体沿用相同结构，使用不同的唯一标识、名称、序号和位置 -->
+            <Item_3 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="3">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="3">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0003</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">坦克一排三号车</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <BD序号 Type="int" TypeFlag="0">3</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">140.0,200.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_3>
+            <Item_4 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="4">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="4">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0004</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">坦克一排四号车</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <BD序号 Type="int" TypeFlag="0">4</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">160.0,200.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_4>
+            <Item_5 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="5">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="5">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0005</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">坦克二排一号车</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <BD序号 Type="int" TypeFlag="0">5</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">100.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_5>
+            <Item_6 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="6">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="6">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0006</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克二排二号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T06</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0006</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">6</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0006</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">120.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_6>
+            <Item_7 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="7">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="7">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0007</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克二排三号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T07</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0007</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">7</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0007</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">140.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_7>
+            <Item_8 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="8">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="8">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0008</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克二排四号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T08</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0008</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">8</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0008</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">160.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_8>
+            <Item_9 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="9">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="9">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0009</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克三排一号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T09</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0009</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">9</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0009</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">100.0,280.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_9>
+            <Item_10 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="10">
+                <主题名称 Name="TopicName" Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Name="TopicData" Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="10">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0010</唯一标识>
+                    <名称 Name="Name" Type="Tsstring" TypeFlag="0">坦克三排二号车</名称>
+                    <BD简称 Name="ShortName" Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Name="UnitCode" Type="Tsstring" TypeFlag="0">T10</单位代字>
+                    <BD内码 Name="InternalCode" Type="Tsstring" TypeFlag="0">BD-RED-T-0010</BD内码>
+                    <BD序号 Name="SerialNumber" Type="int" TypeFlag="0">10</BD序号>
+                    <属方标识 Name="SideIdentifier" Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Name="ParentIdentifier" Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Name="Children" Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0010</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">120.0,280.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_10>
+            <Item_11 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="11">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="11">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0011</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">坦克三排三号车</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">T11</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-T-0011</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">11</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0011</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">140.0,280.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_11>
+            <Item_12 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="12">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="12">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0012</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">坦克三排四号车</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">T12</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-T-0012</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">12</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">装甲兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">排</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0012</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">主战坦克</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">MBT</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">装甲战斗车辆</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">160.0,280.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">1</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_12>
+            <Item_13 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="13">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="13">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0013</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">步兵班一号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">I13</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-I-0013</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">13</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">步兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">班</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0013</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">步兵班</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">INF</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">人员</模板名称>
+                            <数量 Type="int" TypeFlag="0">9</数量>
+                            <剩余数量 Type="int" TypeFlag="0">9</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">200.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">2</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_13>
+            <Item_14 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="14">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="14">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0014</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">步兵班二号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">I14</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-I-0014</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">14</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">步兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">班</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0014</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">步兵班</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">INF</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">人员</模板名称>
+                            <数量 Type="int" TypeFlag="0">9</数量>
+                            <剩余数量 Type="int" TypeFlag="0">9</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">230.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">2</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_14>
+            <Item_15 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="15">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="15">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0015</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">步兵班三号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">I15</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-I-0015</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">15</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">步兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">班</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0015</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">步兵班</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">INF</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">人员</模板名称>
+                            <数量 Type="int" TypeFlag="0">9</数量>
+                            <剩余数量 Type="int" TypeFlag="0">9</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">260.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">2</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_15>
+            <Item_16 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="16">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="16">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0016</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">步兵班四号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">I16</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-I-0016</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">16</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">作战单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">步兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">班</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0016</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">步兵班</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">INF</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">人员</模板名称>
+                            <数量 Type="int" TypeFlag="0">9</数量>
+                            <剩余数量 Type="int" TypeFlag="0">9</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">290.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">90.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">2</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_16>
+            <Item_17 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="17">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="17">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0017</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">侦察分队一号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">R17</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-R-0017</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">17</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">侦察单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">侦察兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">班</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0017</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">侦察分队</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">REC</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">侦察人员</模板名称>
+                            <数量 Type="int" TypeFlag="0">5</数量>
+                            <剩余数量 Type="int" TypeFlag="0">5</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">320.0,240.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">45.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">3</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_17>
+            <Item_18 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="18">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="18">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0018</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">侦察分队二号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">R18</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-R-0018</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">18</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">侦察单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">侦察兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">班</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0018</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">侦察分队</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">REC</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">侦察人员</模板名称>
+                            <数量 Type="int" TypeFlag="0">5</数量>
+                            <剩余数量 Type="int" TypeFlag="0">5</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">340.0,260.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">45.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">3</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_18>
+            <Item_19 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="19">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="19">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0019</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">火力支援单元一号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">F19</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-F-0019</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">19</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">火力单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">炮兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">连</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0019</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">自行火炮</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">SPG</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">火炮装备</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">380.0,280.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">0.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">4</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_19>
+            <Item_20 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="20">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="20">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0020</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">火力支援单元二号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">F20</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-F-0020</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">20</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">火力单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">炮兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">连</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0020</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">自行火炮</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">SPG</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">火炮装备</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">410.0,280.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">0.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">4</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_20>
+            <Item_21 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="21">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="21">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0021</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">防空单元一号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">A21</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-A-0021</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">21</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">防空单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">防空兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">连</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0021</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">近程防空系统</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">SAM</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">防空装备</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">450.0,300.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">180.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">5</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_21>
+            <Item_22 Type="TopicItem" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="22">
+                <主题名称 Type="Tsstring" TypeFlag="0">实体</主题名称>
+                <主题数据 Type="Entity" TypeFlag="0" IsNull="0" IsRef="0" PointerIndex="22">
+                    <唯一标识 Type="Tsstring" TypeFlag="0">unit-red-0022</唯一标识>
+                    <名称 Type="Tsstring" TypeFlag="0">防空单元二号</名称>
+                    <BD简称 Type="Tsstring" TypeFlag="0">红方</BD简称>
+                    <单位代字 Type="Tsstring" TypeFlag="0">A22</单位代字>
+                    <BD内码 Type="Tsstring" TypeFlag="0">BD-RED-A-0022</BD内码>
+                    <BD序号 Type="int" TypeFlag="0">22</BD序号>
+                    <属方标识 Type="Tsstring" TypeFlag="0">红方</属方标识>
+                    <上级标识 Type="Tsstring" TypeFlag="0">formation-red-0001</上级标识>
+                    <下级标识 Type="TsList" TypeFlag="0" Count="0" />
+                    <所属组 Type="Tsstring" TypeFlag="0">红方编成</所属组>
+                    <国别 Type="Tsstring" TypeFlag="0">中国</国别>
+                    <JZ类型 Type="Tsstring" TypeFlag="0">防空单元</JZ类型>
+                    <BZ类型 Type="Tsstring" TypeFlag="0">陆军</BZ类型>
+                    <BD类型 Type="Tsstring" TypeFlag="0">防空兵</BD类型>
+                    <BD级别 Type="Tsstring" TypeFlag="0">连</BD级别>
+                    <LVC类别 Type="Tsstring" TypeFlag="0">虚兵</LVC类别>
+                    <BL组成 Type="TsList" TypeFlag="0" Count="1">
+                        <Item_0 Type="BasicComposition" TypeFlag="0">
+                            <唯一标识 Type="Tsstring" TypeFlag="0">composition-unit-red-0022</唯一标识>
+                            <类型名称 Type="Tsstring" TypeFlag="0">近程防空系统</类型名称>
+                            <类型码 Type="Tsstring" TypeFlag="0">SAM</类型码>
+                            <模板名称 Type="Tsstring" TypeFlag="0">防空装备</模板名称>
+                            <数量 Type="int" TypeFlag="0">1</数量>
+                            <剩余数量 Type="int" TypeFlag="0">1</剩余数量>
+                        </Item_0>
+                    </BL组成>
+                    <位置 Type="Position" TypeFlag="0">
+                        <位置 Type="Tsstring" TypeFlag="0">480.0,300.0,0.0</位置>
+                        <朝向 Type="Tsstring" TypeFlag="0">180.0,0.0,0.0</朝向>
+                    </位置>
+                    <属性列表 Type="TsList" TypeFlag="0" Count="2">
+                        <Item_0 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">实体类型</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">int</类型>
+                            <属性值 Type="int" TypeFlag="0">5</属性值>
+                        </Item_0>
+                        <Item_1 Type="Property" TypeFlag="0">
+                            <属性名称 Type="Tsstring" TypeFlag="0">可见性</属性名称>
+                            <类型 Type="Tsstring" TypeFlag="0">bool</类型>
+                            <属性值 Type="bool" TypeFlag="0">true</属性值>
+                        </Item_1>
+                    </属性列表>
+                    <下级数量 Type="int" TypeFlag="0">0</下级数量>
+                </主题数据>
+            </Item_22>
+        </主题列表>
+    </DataList>
+</ScenarioData>
