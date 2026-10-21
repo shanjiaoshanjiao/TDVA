@@ -15,11 +15,18 @@
            name: "ScenarioData"
        })
 
-3. XML 属性和文本：
+3. XML 标签属性：
+       (:Node {
+           id: "...",
+           name: "ScenarioBackground",
+           Type: "ScenarioBackground"
+       })
+
+4. XML 叶子元素：
        (:Field {
            id: "...",
-           name: "@Type",
-           value: "ScenarioBackground"
+           name: "Name",
+           example: "Scenario A"
        })
 
 4. XML 父子关系：
@@ -33,7 +40,8 @@
 2. DataList/主题列表/Item_n 不作为具体业务数据节点保存；
 3. 将 Item_n 归一为一个 Item_TEMPLATE 模板节点；
 4. 后续由 run.py 根据 JSON 数据动态生成 Item_0、Item_1、Item_2；
-5. XML 节点属性统一保存为 Field 节点；
+5. XML 节点属性直接保存为 Node 节点属性；
+6. 没有子元素的 XML 元素保存为 Field 节点；
 6. XML 节点名称统一保存为 Node.name；
 7. ScenarioData 使用 Root_Node 标签，同时保留 Node 标签，兼容 run.py；
 8. 导入前清空 Neo4j 当前数据库。
@@ -243,36 +251,51 @@ def merge_xml_elements(
 # ============================================================================
 def create_or_update_node(
     graph: Graph,
+    node_id: str,
     node_name: str,
     example: str = "",
+    attributes: Optional[Dict[str, str]] = None,
+    xml_path: str = "",
     is_root: bool = False,
 ) -> Node:
     """
-    创建或更新 XML Node 节点。
+    创建 XML Node 节点。
 
-    普通节点：
+    有子元素的 XML 元素保存为 Node。
+
+    XML 属性直接保存到 Node 属性中，例如：
+
+        <ScenarioBackground Type="ScenarioBackground">
+
+    保存为：
 
         (:Node {
             id: "...",
-            name: "...",
-            example: "..."
+            name: "ScenarioBackground",
+            Type: "ScenarioBackground"
         })
-
-    根节点：
-
-        (:Node:Root_Node {
-            id: "scenario_root",
-            name: "ScenarioData",
-            example: "..."
-        })
-
-    Node.example 保存 XML 节点的直接文本。
-    XML 属性不写入 Node，而是单独保存为 Field 节点。
     """
     node_properties = {
+        "id": node_id,
         "name": node_name,
         "example": example,
+        "xml_path": xml_path,
     }
+
+    if attributes:
+        for key, value in attributes.items():
+            # 避免 XML 属性覆盖图模型自己的保留属性。
+            if key in {
+                "id",
+                "name",
+                "example",
+                "xml_path",
+            }:
+                node_properties[
+                    f"xml_attr_{key}"
+                ] = value
+            else:
+                node_properties[key] = value
 
     if is_root:
         node = Node(
@@ -286,69 +309,63 @@ def create_or_update_node(
             **node_properties,
         )
 
-    graph.create(
-        node
-    )
+    graph.create(node)
 
     return node
-
 
 def create_or_update_field(
     graph: Graph,
     parent_node: Node,
+    field_id: str,
     field_name: str,
     field_value: str,
     field_path: str,
     field_order: int,
+    attributes: Optional[Dict[str, str]] = None,
 ) -> Node:
-    """
-    创建或更新 XML Field 节点。
+    """创建 Field，保存叶子元素的文本及 XML 属性。"""
+    field_properties = {
+        "id": field_id,
+        "name": field_name,
+        "example": field_value,
+        "xml_path": field_path,
+    }
 
-    XML 属性示例：
+    # 与 create_or_update_node() 的保留属性规则保持一致。
+    reserved_properties = {
+        "id",
+        "name",
+        "example",
+        "xml_path",
+    }
 
-        Type="ScenarioBackground"
-
-    保存为：
-
-        (:Field {
-            id: "...",
-            name: "@Type",
-            value: "ScenarioBackground"
-        })
-
-    XML 文本示例：
-
-        <Name>Scenario A</Name>
-
-    保存为：
-
-        (:Field {
-            id: "...",
-            name: "value",
-            value: "Scenario A"
-        })
-    """
+    for key, value in (attributes or {}).items():
+        property_key = (
+            f"xml_attr_{key}"
+            if key in reserved_properties
+            else key
+        )
+        field_properties[property_key] = value
 
     field = Node(
         FIELD_LABEL,
-        name=field_name,
-        value=field_value,
+        **field_properties,
     )
 
-    graph.create(
-        field,
-    )
+    graph.create(field)
 
     relation = Relationship(
         parent_node,
         FIELD_RELATION,
         field,
         order=field_order,
+        child_order=field_order,
     )
 
     graph.create(relation)
 
     return field
+
 
 def create_child_relation(
     graph: Graph,
@@ -369,28 +386,34 @@ def create_child_relation(
 
     graph.create(relation)
 
-def write_node_attributes_as_fields(
+
+def create_leaf_field(
     graph: Graph,
-    node: Node,
-    xml_path: str,
-    attributes: Dict[str, str],
-) -> int:
-    """
-    将 XML 属性保存为 Field 节点。
+    parent_node: Node,
+    element: etree._Element,
+    field_path: str,
+    field_order: int,
+) -> Node:
+    """将没有子元素的 XML 元素保存为 Field，保留 XML 属性。"""
+    field_name = remove_namespace(element.tag)
+    field_value = get_element_text(element)
+    field_attributes = get_element_attributes(element)
 
-    属性名称统一增加 @ 前缀，便于 run.py 区分 XML 属性和 XML 文本。
-    """
-    for index, (key, value) in enumerate(attributes.items()):
-        create_or_update_field(
-            graph=graph,
-            parent_node=node,
-            field_name=f"@{key}",
-            field_value=value,
-            field_path=xml_path,
-            field_order=index,
-        )
+    field_id = make_stable_id(
+        field_path,
+        prefix="field",
+    )
 
-    return len(attributes)
+    return create_or_update_field(
+        graph=graph,
+        parent_node=parent_node,
+        field_id=field_id,
+        field_name=field_name,
+        field_value=field_value,
+        field_path=field_path,
+        field_order=field_order,
+        attributes=field_attributes,
+    )
 
 
 # ============================================================================
@@ -504,6 +527,30 @@ class ScenarioXmlImporter:
 
         return template
 
+   
+    def _build_item_template(
+        self,
+        parent: etree._Element,
+    ) -> Optional[etree._Element]:
+        """合并同一父节点下的 Item_n，生成一个独立模板。"""
+        items = [
+            child
+            for child in get_element_children(parent)
+            if is_item_tag(child.tag)
+        ]
+
+        if not items:
+            return None
+
+        template = copy.deepcopy(items[0])
+        template.tag = "Item_TEMPLATE"
+
+        for item in items[1:]:
+            merge_xml_elements(template, item)
+
+        return template
+
+   
     def _find_topic_list(
         self,
         root: etree._Element,
@@ -563,7 +610,10 @@ class ScenarioXmlImporter:
         is_reusable_item: bool = False,
     ) -> Node:
         """
-        递归导入单个 XML 节点。
+        递归导入有子元素的 XML 节点。
+
+        当前函数只创建 Node。
+        没有子元素的 XML 元素由父节点循环创建为 Field。
         """
         raw_name = remove_namespace(element.tag)
 
@@ -603,13 +653,25 @@ class ScenarioXmlImporter:
             normalized_path_parts
         )
 
-
         text = get_element_text(element)
+        attributes = get_element_attributes(element)
+
+        node_id = (
+            ROOT_NODE_ID
+            if is_root
+            else make_stable_id(
+                xml_path,
+                prefix="node",
+            )
+        )
 
         node = create_or_update_node(
             graph=self.graph,
+            node_id=node_id,
             node_name=node_name,
             example=text,
+            attributes=attributes,
+            xml_path=xml_path,
             is_root=is_root,
         )
 
@@ -623,57 +685,52 @@ class ScenarioXmlImporter:
                 child_order=sibling_order,
             )
 
-        attributes = get_element_attributes(element)
-
-        self.imported_field_count += (
-            write_node_attributes_as_fields(
-                graph=self.graph,
-                node=node,
-                xml_path=xml_path,
-                attributes=attributes,
-            )
-        )
-
-
-        # 主题列表只保留一个 Item_TEMPLATE 节点。
-        if (
-            is_topic_list
-            and topic_item_template is not None
-        ):
-            template_path = (
-                TOPIC_LIST_PATH
-                + ("Item_TEMPLATE",)
-            )
-
-            self._visit_element(
-                element=topic_item_template,
-                parent_node=node,
-                path_parts=template_path,
-                sibling_order=0,
-                topic_item_template=None,
-                is_reusable_item=True,
-            )
-
-            return node
-
         children = get_element_children(element)
+        item_template = self._build_item_template(element)
+        item_template_inserted = False
 
         for child_index, child in enumerate(children):
             child_name = remove_namespace(child.tag)
+
+            if is_item_tag(child_name):
+                if item_template_inserted:
+                    continue
+
+                if item_template is None:
+                    continue
+
+                child = item_template
+                child_name = "Item_TEMPLATE"
+                item_template_inserted = True
 
             child_path_parts = (
                 normalized_path_parts
                 + (child_name,)
             )
 
-            # 如果当前节点是主题列表，则忽略原始 Item_0、
-            # Item_1、Item_2 名称，统一使用 Item_TEMPLATE。
-            if (
-                is_topic_list
-                and is_item_tag(child_name)
-            ):
+            child_path = make_node_path(
+                child_path_parts
+            )
+
+            child_children = get_element_children(
+                child
+            )
+
+            if not child_children:
+                # 叶子 XML 元素创建为 Field。
+                create_leaf_field(
+                    graph=self.graph,
+                    parent_node=node,
+                    element=child,
+                    field_path=child_path,
+                    field_order=child_index,
+                )
+
+                self.imported_field_count += 1
                 continue
 
+            # 非叶子 XML 元素创建为 Node，
+            # 通过 CONTAINS 连接到当前 Node。
             self._visit_element(
                 element=child,
                 parent_node=node,
@@ -765,7 +822,6 @@ def main() -> None:
     """
     程序入口。
     """
-
     # ========================================================================
     # 配置
     # ========================================================================

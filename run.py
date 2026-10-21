@@ -4,6 +4,7 @@ import json
 import time
 import copy
 from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
 from threading import Lock
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
@@ -98,6 +99,7 @@ class GlobalIdRegistry:
             )
 
         return f"{entity_type}:{entity_path}"
+    
 
     def get_or_create(
         self,
@@ -130,6 +132,7 @@ class GlobalIdRegistry:
             self.used_ids.add(entity_id)
 
             return entity_id
+        
 
     def register_existing(
         self,
@@ -194,6 +197,7 @@ class GlobalIdRegistry:
             self.used_ids.add(entity_id)
 
             return entity_id
+
 
     def get(
         self,
@@ -309,7 +313,6 @@ class GlobalIdRegistry:
 
         return registry
 
-
 @dataclass(frozen=True)
 class Workspace:
     prompt_dir: Path
@@ -319,7 +322,6 @@ class Workspace:
     chunk_mapping_file: Path
     entity_map_file: Path
     extra_info_file: Path
-
 
 class WorkspaceManager:
     def __init__(
@@ -527,18 +529,26 @@ class Neo4jTemplateService:
     def _load_root_data(self) -> Optional[Dict]:
         """查询根节点及其字段属性。"""
         root_query = """
-            MATCH (root:Root_Node)-[:HAS_FIELD]->(field:Field)
-            RETURN root.name AS node_name,
+            MATCH (root:Root_Node)
+            OPTIONAL MATCH (root)-[:HAS_FIELD]->(field:Field)
+            WITH root, collect(field) AS fields
+            RETURN
+                root.name AS node_name,
                 root.description AS node_des,
                 id(root) AS node_id,
-                COLLECT({
-                    name: field.name,
-                    des: field.description,
-                    note: field.note,
-                    example: field.example
-                }) AS attributes
+                properties(root) AS xml_attributes,
+                [
+                    field IN fields
+                    WHERE field IS NOT NULL
+                    | {
+                        name: field.name,
+                        des: field.description,
+                        note: field.note,
+                        example: field.example,
+                        xml_attributes: properties(field)
+                    }
+                ] AS attributes
         """
-
         root_result = (
             self.neo4j_graph
             .run(root_query)
@@ -549,6 +559,7 @@ class Neo4jTemplateService:
             return None
 
         return root_result[0]
+
 
     def _build_root_fragment(
         self,
@@ -565,6 +576,10 @@ class Neo4jTemplateService:
             "parent_node_id": None,
             "parent_node_name": None,
             "node_type": "Root_Node",
+            "xml_attributes": root_data.get(
+                "xml_attributes",
+                {},
+            ),
             "attributes": root_data["attributes"],
             "children": children_map.get(
                 root_node_id,
@@ -583,15 +598,18 @@ class Neo4jTemplateService:
             MATCH (n:Node) WHERE id(n) = node_id
             OPTIONAL MATCH (parent)-[:CONTAINS]->(n)
             OPTIONAL MATCH (n)-[:HAS_FIELD]->(field:Field)
-            RETURN node_id,
+            RETURN
+                node_id,
                 n.name AS node_name,
                 n.description AS node_des,
+                properties(n) AS xml_attributes,
                 COLLECT(DISTINCT id(parent)) AS parent_ids,
                 COLLECT({
                     name: field.name,
                     des: field.description,
                     note: field.note,
-                    example: field.example
+                    example: field.example,
+                    xml_attributes: properties(field)
                 }) AS attributes
         """
 
@@ -670,6 +688,10 @@ class Neo4jTemplateService:
                 for parent_id in parent_node_id
             },
             "node_type": "Node",
+            "xml_attributes": node.get(
+                "xml_attributes",
+                {},
+            ),
             "attributes": unique_attributes,
             "children": children,
             "is_root": False,
@@ -750,7 +772,33 @@ class NestedJsonEntityMatcher:
             return ""
   
         return value.lower().strip()
+    
 
+    def _normalize_template_match_name(
+        self,
+        name: str,
+    ) -> str:
+        """
+        只用于名称比较，不修改 JSON 原始键和路径。
+
+        Item_0、Item_1、item_2 等实例统一视为 item_template。
+        """
+        normalized_name = self.normalize_string(name)
+
+        if not normalized_name:
+            return ""
+
+        # 这里使用已经完成 lower + strip 的值，
+        # 因此可以处理 Item_0、item_0、" Item_0 " 等情况。
+        if re.fullmatch(
+            r"item_[0-9]+",
+            normalized_name,
+        ):
+            return "item_template"
+
+        return normalized_name
+
+    
     def _build_matched_entity_data(
         self,
         matched_key: str,
@@ -840,8 +888,16 @@ class NestedJsonEntityMatcher:
             and len(target_value) > 0
         ):
             for idx, item in enumerate(target_value):
+                # 匹配阶段归一化后的模板名是小写 item_template。
+                # 输出实例名仍使用 Item_0、Item_1 的大小写格式。
+                output_key = (
+                    f"Item_{idx}"
+                    if matched_key == "item_template"
+                    else matched_key
+                )
+
                 position = current_path + [
-                    (matched_key, idx)
+                    (output_key, idx)
                 ]
 
                 # 列表元素是字典
@@ -860,7 +916,7 @@ class NestedJsonEntityMatcher:
 
                     matched_data_list.append(
                         {
-                            matched_key: entity_data,
+                            output_key: entity_data,
                         }
                     )
 
@@ -877,11 +933,12 @@ class NestedJsonEntityMatcher:
 
                     matched_data_list.append(
                         {
-                            matched_key: entity_data,
+                            output_key: entity_data,
                         }
                     )
 
         return matched_data_list
+
 
     def _extract_from_list(
         self,
@@ -931,6 +988,7 @@ class NestedJsonEntityMatcher:
 
         return matched_data_list
 
+
     def _extract_from_dict(
         self,
         nested_data: Dict,
@@ -943,41 +1001,53 @@ class NestedJsonEntityMatcher:
         allowed_parent_nodes: Optional[Set[str]] = None,
     ) -> List[Dict]:
         """
-        遍历字典，保持原始递归行为：
+        遍历字典：
+
         1. 查找当前字典中的匹配 key；
-        2. 处理匹配节点；
-        3. 继续递归当前字典中的所有 value。
+        2. 校验父节点；
+        3. 处理匹配节点；
+        4. 继续递归当前字典中的所有 value。
         """
         matched_data_list: List[Dict] = []
 
         if allowed_parent_nodes is None:
             allowed_parent_nodes = set()
 
-        target_node_name = fragment["node_name"]
-        target_normalized = self.normalize_string(
-            target_node_name
+        target_node_name = fragment.get(
+            "node_name",
+            "",
+        )
+
+        # 注意：当前 fragment 名称也要使用模板归一化。
+        # item_template 与 Item_0 会归一化为同一个名称。
+        target_normalized = (
+            self._normalize_template_match_name(
+                target_node_name
+            )
         )
 
         if not target_normalized:
             return matched_data_list
 
-        matched_key: Optional[str] = None
+        # 使用列表，而不是单个 matched_key。
+        # 这样 item_template 可以同时匹配 Item_0、Item_1、Item_2。
+        matched_keys: List[str] = []
 
-        # 查找当前字典中与目标节点名称匹配的 key
         for key in nested_data.keys():
             if not isinstance(key, str):
                 continue
 
-            key_normalized = self.normalize_string(key)
+            key_normalized = (
+                self._normalize_template_match_name(key)
+            )
 
-            if not key_normalized:
-                continue
+            if (
+                key_normalized
+                and key_normalized == target_normalized
+            ):
+                matched_keys.append(key)
 
-            if key_normalized == target_normalized:
-                matched_key = key
-
-        # 处理当前字典中匹配到的节点
-        if matched_key is not None:
+        if matched_keys:
             current_parent_name = ""
 
             if current_path:
@@ -985,94 +1055,51 @@ class NestedJsonEntityMatcher:
 
                 if isinstance(parent_path_item, tuple):
                     current_parent_name = parent_path_item[0]
-
                 elif isinstance(parent_path_item, str):
                     current_parent_name = parent_path_item
 
-            current_parent_normalized = self.normalize_string(
-                current_parent_name
+            current_parent_normalized = (
+                self._normalize_template_match_name(
+                    current_parent_name
+                )
             )
 
-            # 父节点限制校验
-            if (
-                allowed_parent_nodes
-                and current_parent_normalized
-                not in allowed_parent_nodes
-            ):
-                logger.info(
-                    "节点[%s]父节点[%s]不在允许列表[%s]中，跳过",
-                    matched_key,
-                    current_parent_name,
-                    allowed_parent_nodes,
-                )
+            parent_is_allowed = (
+                not allowed_parent_nodes
+                or current_parent_normalized
+                in allowed_parent_nodes
+            )
 
-                # 保持原始逻辑：
-                # 父节点不匹配时，继续遍历当前 nested_data 的所有 value，
-                # 但不处理当前匹配节点本身，然后直接返回。
-                for key, value in nested_data.items():
-                    if isinstance(value, dict):
-                        recursive_path = (
-                            current_path + [key]
-                        )
-                        recursive_dict_key = key
-                    else:
-                        recursive_path = (
-                            current_path.copy()
-                        )
-                        recursive_dict_key = (
-                            current_dict_key
-                        )
+            if parent_is_allowed:
+                # 处理所有匹配到的实例，而不是只处理最后一个
+                for matched_key in matched_keys:
+                    target_value = nested_data[matched_key]
 
-                    recursive_result = (
-                        self._extract_nested_entity_data_by_type(
-                            nested_data=value,
+                    matched_result = (
+                        self._build_matched_entity_data(
+                            matched_key=matched_key,
+                            target_value=target_value,
                             fragment=fragment,
-                            current_path=recursive_path,
-                            parent_key=(
-                                key
-                                if isinstance(value, list)
-                                else None
-                            ),
-                            current_dict_key=(
-                                recursive_dict_key
-                            ),
-                            allowed_parent_nodes=(
-                                allowed_parent_nodes
-                            ),
+                            current_path=current_path,
+                            current_dict_key=current_dict_key,
                         )
                     )
 
-                    if recursive_result:
+                    if matched_result:
                         matched_data_list.extend(
-                            recursive_result
+                            matched_result
                         )
+            else:
+                for matched_key in matched_keys:
+                    logger.info(
+                        "节点[%s]父节点[%s]不在允许列表[%s]中，跳过",
+                        matched_key,
+                        current_parent_name,
+                        allowed_parent_nodes,
+                    )
 
-                return matched_data_list
-
-            # 父节点校验通过，构造当前匹配节点结果
-            target_value = nested_data[matched_key]
-
-            matched_result = (
-                self._build_matched_entity_data(
-                    matched_key=matched_key,
-                    target_value=target_value,
-                    fragment=fragment,
-                    current_path=current_path,
-                    current_dict_key=current_dict_key,
-                )
-            )
-
-            if matched_result:
-                matched_data_list.extend(
-                    matched_result
-                )
-
-            # 注意：
-            # 这里不能 continue。
-            # 原始逻辑在处理匹配节点后，
-            # 仍然会继续递归当前字典的所有 value。
-
-        # 递归遍历当前字典中的所有 value
+        # 无论当前节点是否匹配，都继续递归子节点。
+        # 这保持原来的递归行为。
         for key, value in nested_data.items():
             if isinstance(value, dict):
                 recursive_path = current_path + [key]
@@ -1104,7 +1131,9 @@ class NestedJsonEntityMatcher:
                 )
 
         return matched_data_list
-    
+
+
+
     def _extract_nested_entity_data_by_type(
         self,
         nested_data: Union[Dict, List],
@@ -1176,7 +1205,7 @@ class NestedJsonEntityMatcher:
                     isinstance(parent_name, str)
                     and parent_name.strip()
                 ):
-                    normalized_parent = self.normalize_string(
+                    normalized_parent = self._normalize_template_match_name(
                         parent_name
                     )
 
@@ -1393,6 +1422,7 @@ class EntityMappingService:
         return entity_data_map
 
 
+
     def prepare_entity_data_map(
         self,
         json_data: Dict,
@@ -1437,6 +1467,7 @@ class EntityMappingService:
 
         return entity_data_map
 
+
 class ChunkService:
     """
     根据模板 fragments 和 entity_data_map 构建并保存分块。
@@ -1477,6 +1508,37 @@ class ChunkService:
             sanitized = f"node_{sanitized}"
 
         return sanitized
+
+
+    def sanitize_xml_tag_name(self, value, context: str = "") -> str:
+        """保留中文并校验 XML 标签名。"""
+
+        if value is None or self.is_nan(value):
+            raise ValueError(
+                f"缺少 XML 标签名：{context}"
+            )
+
+        tag_name = str(value).strip()
+        tag_name = re.sub(r"\s+", "", tag_name)
+        tag_name = tag_name.replace("/", "_")
+        tag_name = tag_name.replace("+", "_")
+        tag_name = tag_name.replace("，", "")
+        tag_name = tag_name.replace("：", "")
+
+        if not tag_name:
+            raise ValueError(
+                f"XML 标签名为空：{context}"
+            )
+
+        try:
+            etree.Element(tag_name)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"非法 XML 标签名 {tag_name!r}：{context}"
+            ) from exc
+
+        return tag_name
+
 
     def is_nan(self, value):
         """检查值是否为 NaN/空值
@@ -1595,63 +1657,143 @@ class ChunkService:
 
 
     def serialize_fragment_as_xml_chunk(
-        self, 
-        fragment: Dict, 
-        node_id: str, 
-        parent_node_ids: list, 
-        node_type: str, 
-        parent_json_key: str = "unknown", 
+        self,
+        fragment: Dict,
+        node_id: str,
+        parent_node_ids: list,
+        node_type: str,
+        parent_json_key: str = "unknown",
         full_path_str: str = "unknown"
     ):
         """生成带锚点属性的XML分块（修复编码声明+序列化冲突）"""
-        # 1. 改用lxml.etree创建节点（替换标准库ET）
-        node_name = self.sanitize_string(fragment.get("node_name", "unknown"))
-        # 关键：用lxml.etree创建Element，而非标准库xml.etree
-        node_element = etree.Element(node_name)  # 这里用lxml的etree（代码开头已导入from lxml import etree）
-        
-        # 2. 嵌入锚点属性（保留原有逻辑，优化parent-id处理）
+
+        node_name = self.sanitize_xml_tag_name(
+            fragment.get("node_name"),
+            context=f"node_id={node_id!r}",
+        )
+
+        raw_node_attributes = (
+            fragment.get("xml_attributes") or {}
+        )
+
+        excluded_node_attributes = {
+            "id",
+            "name",
+            "description",
+            "xml_path",
+            "example"
+        }
+
+        node_attributes = {
+            str(key): str(value)
+            for key, value in raw_node_attributes.items()
+            if key not in excluded_node_attributes
+            and value is not None
+        }
+
+        node_element = etree.Element(
+            node_name,
+            attrib=node_attributes,
+        )
+
         node_element.set("xml-id", node_id)
-        # 处理parent_node_ids（列表转字符串，避免XML属性语法错误）
-        parent_id_str = ",".join(parent_node_ids) if isinstance(parent_node_ids, list) else str(parent_node_ids)
+
+        parent_id_str = (
+            ",".join(parent_node_ids)
+            if isinstance(parent_node_ids, list)
+            else str(parent_node_ids)
+        )
         node_element.set("parent-id", parent_id_str)
         node_element.set("node-type", str(node_type or "unknown"))
-        node_element.set("parent-json-key", self.sanitize_string(parent_json_key))
-        node_element.set("full-json-path", self.sanitize_string(full_path_str))
-        
-        # 3. 处理字段属性：生成注释节点 + 字段元素（保留逻辑，改用lxml的Comment）
+        node_element.set(
+            "parent-json-key",
+            self.sanitize_string(parent_json_key),
+        )
+        node_element.set(
+            "full-json-path",
+            self.sanitize_string(full_path_str),
+        )
+
         attrs = fragment.get("attributes", [])
-        for field_attr in attrs:
-            field_name = field_attr.get("name", "unknown")
+
+        for index, field_attr in enumerate(attrs):
+            if not isinstance(field_attr, dict):
+                logger.warning(
+                    "跳过非字典字段: parent_node=%r, index=%d, value=%r",
+                    node_name, index, field_attr,
+                )
+                continue
+
+            raw_field_name = field_attr.get("name")
+
+            if self.is_nan(raw_field_name) or not str(raw_field_name).strip():
+                logger.warning(
+                    "跳过缺少 name 的字段: parent_node=%r, index=%d, field=%r",
+                    node_name, index, field_attr,
+                )
+                continue
+
+            field_name = self.sanitize_xml_tag_name(
+                raw_field_name,
+                context=f"parent_node={node_name!r}, field_index={index}",
+            )
+
+
             field_des = field_attr.get("des")
             field_exp = field_attr.get("example")
             field_note = field_attr.get("note")
 
-            if self.is_nan(field_name):
-                continue
-            field_name = self.sanitize_string(field_name)
-
-            # 拼接注释内容
             comment_parts = []
+
             if field_des and not self.is_nan(field_des):
                 field_des = "".join(field_des.strip().split("\n"))
-                comment_parts.append(f"{field_name} 中文描述：{str(field_des)}")
+                comment_parts.append(
+                    f"{field_name} 中文描述：{str(field_des)}"
+                )
+
             if field_note and not self.is_nan(field_note):
                 field_note = "；".join(field_note.strip().split("\n"))
                 comment_parts.append(f"生成约束：{str(field_note)}")
+
             if field_exp and not self.is_nan(field_exp):
                 comment_parts.append(f"举例：{str(field_exp)}")
-            
-            comment_text = " | ".join(comment_parts) if comment_parts else f"{field_name}：无辅助信息"
-            # 关键：用lxml.etree.Comment创建注释节点（而非标准库ET.Comment）
+
+            comment_text = (
+                " | ".join(comment_parts)
+                if comment_parts
+                else f"{field_name}：无辅助信息"
+            )
+
             comment_node = etree.Comment(comment_text)
             node_element.append(comment_node)
 
-            # 创建字段元素
-            field_elem = etree.SubElement(node_element, field_name)
-        
-        # 调用lxml格式化函数
-        return self.serialize_xml_element(node_element)
+            raw_field_attributes = (
+                field_attr.get("xml_attributes") or {}
+            )
 
+            excluded_field_attributes = {
+                "id",
+                "name",
+                "description",
+                "note",
+                "example",
+                "xml_path",
+            }
+
+            field_attributes = {
+                str(key): str(value)
+                for key, value in raw_field_attributes.items()
+                if key not in excluded_field_attributes
+                and value is not None
+            }
+
+            etree.SubElement(
+                node_element,
+                field_name,
+                attrib=field_attributes,
+            )
+
+        return self.serialize_xml_element(node_element)
 
 
     def generate_aligned_chunks(
@@ -1788,7 +1930,23 @@ class ChunkService:
                     full_path_str = fragment.get("node_name", "unknown")
 
                 ## 生成XML分块
-                xml_chunk = self.serialize_fragment_as_xml_chunk(fragment, instance_node_id, instance_parent_id, node_type, parent_json_key, full_path_str)
+                xml_fragment = fragment
+
+                if str(fragment.get("node_name", "")).lower() == "item_template" and entity_data:
+                    matched_key = next(iter(entity_data))
+                    if isinstance(matched_key, str) and re.fullmatch(
+                        r"Item_[0-9]+", matched_key, re.IGNORECASE
+                    ):
+                        xml_fragment = {**fragment, "node_name": matched_key}
+
+                xml_chunk = self.serialize_fragment_as_xml_chunk(
+                    xml_fragment,
+                    instance_node_id,
+                    instance_parent_id,
+                    node_type,
+                    parent_json_key,
+                    full_path_str,
+                )
     
                 # 2. 生成JSON分块（绑定锚点与父子关系+填充当前List元素数据）
                 json_chunk = self.generate_json_chunk(
@@ -1897,6 +2055,7 @@ class ChunkService:
         )
 
         return chunk_mapping
+
 
 class PromptBuilder:
     """
@@ -2297,6 +2456,7 @@ class LLMGenerationService:
                     answer = await self._call_llm_for_chunk(
                         current_prompt
                     )
+                    #answer = xml_content
                     # 保存LLM输入输出
                     self._save_prompt_answer(
                         instance_node_id=instance_node_id,
@@ -3127,6 +3287,7 @@ class XMLAssemblyService:
             )
         )
 
+
 class OutputService:
     """
     负责生成流程最终输出的持久化。
@@ -3248,7 +3409,6 @@ class OutputService:
 
         return str(self.ex_info_file)
 
-
 class TDVAXMLGenerator:
     """
     编排单个 XML 文档的 TDVA 生成流程。
@@ -3289,10 +3449,14 @@ class TDVAXMLGenerator:
         xml_chunk_path: str = "./xml_chunks",
         final_xml_path: str = "./final_xml",
         ex_info_path: str = "./info.txt",
+        platform_name: str = "mozi"
     ) -> None:
         self.llm_model = llm_model
         self.max_workers = max_workers
         self.max_completion_length = max_completion_length
+        self.platform_name = (
+            platform_name or "mozi"
+        ).strip().lower()
 
         self.async_client = AsyncOpenAI(
             api_key=openai_api_key,
@@ -3337,6 +3501,20 @@ class TDVAXMLGenerator:
                 prompt_template_path
             ),
         )
+
+
+    def _check_platform(self) -> None:
+        """检查当前平台是否支持。"""
+        supported_platforms = {
+            "mozi",
+        }
+
+        if self.platform_name not in supported_platforms:
+            raise ValueError(
+                f"暂不支持平台: {self.platform_name}，"
+                f"当前支持: {sorted(supported_platforms)}"
+            )
+
 
     def _initialize_services(
         self,
@@ -3431,6 +3609,103 @@ class TDVAXMLGenerator:
             ),
         )
 
+    def _build_generation_info(
+        self,
+        fragment_results: list[dict],
+        elapsed_seconds: float,
+    ) -> dict[str, Any]:
+        """
+        构造最终生成统计信息。
+
+        OutputService 只负责保存该字典，
+        不负责解释生成结果。
+        """
+
+        total_count = len(fragment_results)
+
+        success_count = sum(
+            result.get("status") == "success"
+            for result in fragment_results
+        )
+
+        fallback_count = sum(
+            result.get("status") == "fallback"
+            for result in fragment_results
+        )
+
+        failed_results = [
+            result
+            for result in fragment_results
+            if result.get("status") == "failed"
+        ]
+
+        failed_ids = [
+            result.get("instance_node_id")
+            for result in failed_results
+        ]
+
+        success_ratio = (
+            success_count / total_count
+            if total_count > 0
+            else 0.0
+        )
+
+        return {
+            "elapsed_seconds": elapsed_seconds,
+            "total_count": total_count,
+            "success_count": success_count,
+            "fallback_count": fallback_count,
+            "failed_count": len(
+                failed_results
+            ),
+            "success_ratio": success_ratio,
+            "failed_instance_ids": failed_ids,
+        }
+
+    async def _close_resources(self) -> None:
+        """
+        关闭异步资源。
+
+        LLMGenerationService 内部创建的
+        AsyncOpenAI 客户端由该服务负责关闭。
+        """
+
+        close = getattr(
+            self.llm_generation_service,
+            "aclose",
+            None,
+        )
+
+        if close is None:
+            return
+
+        result = close()
+
+        if hasattr(result, "__await__"):
+            await result
+
+
+    def _prepare_entity_data_map_by_platform(
+        self,
+        json_data: Dict,
+        fragments: List[Dict],
+    ) -> Dict:
+        if self.platform_name == "mozi":
+            return (
+                self.entity_mapping_service
+                .prepare_entity_data_map(
+                    json_data=json_data,
+                    fragments=fragments,
+                )
+            )
+
+        raise ValueError(
+            f"平台 {self.platform_name} 尚未实现实体数据映射"
+        )
+
+
+
+
     async def run(
         self,
         json_data: dict,
@@ -3438,6 +3713,8 @@ class TDVAXMLGenerator:
         """
         执行完整 XML 生成流程。
         """
+        self._check_platform()
+
         start_time = time.perf_counter()
 
         try:
@@ -3458,16 +3735,33 @@ class TDVAXMLGenerator:
                     "未生成任何模板 fragments"
                 )
 
+            # 临时诊断：确认新平台图谱生成的模板结构
+            logger.info(
+                "fragments 返回类型：%s",
+                type(fragments).__name__,
+            )
+            logger.debug(
+                "fragments 内容：%r",
+                fragments,
+            )
+            
             # 2. 根据输入 JSON 和模板 fragments
             #    构建实体数据映射
+            # entity_data_map = (
+            #     self.entity_mapping_service
+            #     .prepare_entity_data_map(
+            #         json_data=json_data,
+            #         fragments=fragments,
+            #     )
+            # )
+
             entity_data_map = (
-                self.entity_mapping_service
-                .prepare_entity_data_map(
+                self._prepare_entity_data_map_by_platform(
                     json_data=json_data,
                     fragments=fragments,
                 )
             )
-            
+
             if not entity_data_map:
                 raise ValueError(
                     "未生成实体数据映射"
@@ -3489,6 +3783,7 @@ class TDVAXMLGenerator:
                     "未生成任何 chunk_mapping"
                 )
 
+            
             # 4. 调用 LLM 填充所有分块
             fragment_results = (
                 await self.llm_generation_service
@@ -3569,89 +3864,11 @@ class TDVAXMLGenerator:
             await self._close_resources()
 
 
-    def _build_generation_info(
-        self,
-        fragment_results: list[dict],
-        elapsed_seconds: float,
-    ) -> dict[str, Any]:
-        """
-        构造最终生成统计信息。
-
-        OutputService 只负责保存该字典，
-        不负责解释生成结果。
-        """
-
-        total_count = len(fragment_results)
-
-        success_count = sum(
-            result.get("status") == "success"
-            for result in fragment_results
-        )
-
-        fallback_count = sum(
-            result.get("status") == "fallback"
-            for result in fragment_results
-        )
-
-        failed_results = [
-            result
-            for result in fragment_results
-            if result.get("status") == "failed"
-        ]
-
-        failed_ids = [
-            result.get("instance_node_id")
-            for result in failed_results
-        ]
-
-        success_ratio = (
-            success_count / total_count
-            if total_count > 0
-            else 0.0
-        )
-
-        return {
-            "elapsed_seconds": elapsed_seconds,
-            "total_count": total_count,
-            "success_count": success_count,
-            "fallback_count": fallback_count,
-            "failed_count": len(
-                failed_results
-            ),
-            "success_ratio": success_ratio,
-            "failed_instance_ids": failed_ids,
-        }
-
-    async def _close_resources(self) -> None:
-        """
-        关闭异步资源。
-
-        LLMGenerationService 内部创建的
-        AsyncOpenAI 客户端由该服务负责关闭。
-        """
-
-        close = getattr(
-            self.llm_generation_service,
-            "aclose",
-            None,
-        )
-
-        if close is None:
-            return
-
-        result = close()
-
-        if hasattr(result, "__await__"):
-            await result
-
-
-
-
 async def main() -> None:
     # Neo4j 配置
     neo4j_uri = os.getenv(
         "NEO4J_URI",
-        "bolt://workspace.featurize.cn:18613",
+        "bolt://workspace.featurize.cn:13533",
     )
 
     neo4j_user = os.getenv(
@@ -3679,7 +3896,7 @@ async def main() -> None:
     input_json_path = Path(
         os.getenv(
             "TDVA_INPUT_JSON",
-            r"D:\非shemi工作内容\陈xz_论文相关\data_generater\测试节点结构数据\L1\01.想定精细度想定_llm_extract_with_guid.json",
+            r"D:\非shemi工作内容\陈xz_论文相关\Scenario_Generation_TDVA\example\scenario_text_llm_extract.json",
         )
     )
 
