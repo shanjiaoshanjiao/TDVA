@@ -1797,37 +1797,31 @@ class ChunkService:
 
 
     def generate_aligned_chunks(
-        self, 
-        fragments: List[Dict], 
-        entity_data_map: Dict[str, List[Dict]]  # 新增：节点类型->List元素字典
+        self,
+        fragments: List[Dict],
+        entity_data_map: Dict[str, List[Dict]],
     ) -> Tuple[Dict, Dict, Dict]:
         """
         根据模板片段和 JSON 实例创建：
         - XML chunks
         - JSON chunks
         - chunk mapping
-        """ 
+        """
         xml_chunks: dict[str, str] = {}
         json_chunks: dict[str, dict] = {}
-        chunk_mapping: dict[str, dict] = {}     # 分块映射表（key: node_id_索引） 
+        chunk_mapping: dict[str, dict] = {}
 
-        node_instance_count_map = {}  # 记录每个原始节点生成了几个实例
-        # 保证父节点先处理、子节点后处理，避免子节点读取不到父节点实例数
+        node_instance_count_map = {}
+
         fragment_map = {
             fragment["node_id"]: fragment
             for fragment in fragments
         }
 
         def get_node_depth(node_id, visited=None):
-            """
-            递归计算节点深度：
-            根节点/无父节点深度为 0；
-            父节点深度 + 1 为当前节点深度。
-            """
             if visited is None:
                 visited = set()
 
-            # 防止异常的循环父子引用导致无限递归
             if node_id in visited:
                 logger.warning(f"检测到循环父子关系: {node_id}")
                 return 0
@@ -1853,10 +1847,9 @@ class ChunkService:
                 for parent_id in valid_parent_ids
             ) + 1
 
-        # Python sorted 是稳定排序：同一层节点仍尽量维持原有顺序
         fragments = sorted(
             fragments,
-            key=lambda fragment: get_node_depth(fragment["node_id"])
+            key=lambda fragment: get_node_depth(fragment["node_id"]),
         )
 
         logger.info(
@@ -1864,91 +1857,216 @@ class ChunkService:
             [
                 f"{fragment['node_id']}({fragment.get('node_name', '')})"
                 for fragment in fragments
-            ]
+            ],
         )
 
         for fragment in fragments:
-            # 获取当前节点的信息
             node_id = fragment["node_id"]
             node_type = str(fragment.get("node_type") or "unknown")
-            node_name = self.sanitize_string(fragment.get("node_name", "unknown"))
+            node_name = self.sanitize_string(
+                fragment.get("node_name", "unknown")
+            )
             parent_node_id = fragment.get("parent_node_id", [])
             node_name = fragment.get("node_name", node_name)
 
-            # 获取当前节点对应的List元素列表
             matched_entity_list = entity_data_map.get(node_id)
 
-            # 当前节点没有自己的匹配数据时，继承父节点实例数。
-            # 例如 Sensor 有 3 个实例，则 Cov / Cov_Ill / Ptc / Ptc-track 也要生成 3 个占位实例。
-            if not matched_entity_list:                
+            is_item_template_node = (
+                str(fragment.get("node_name", "")).strip().casefold()
+                == "item_template"
+            )
+
+            # 独立的 Item_TEMPLATE 节点只有在 JSON 中有真实 Item_n 时才生成。
+            if is_item_template_node:
+                matched_entity_list = [
+                    item
+                    for item in (matched_entity_list or [])
+                    if isinstance(item, dict)
+                    and any(
+                        isinstance(key, str)
+                        and re.fullmatch(
+                            r"Item_[0-9]+",
+                            key,
+                            re.IGNORECASE,
+                        )
+                        for key in item
+                    )
+                ]
+
+                if not matched_entity_list:
+                    node_instance_count_map[node_id] = 0
+                    logger.info(
+                        "跳过空的 Item_TEMPLATE 节点：%s",
+                        node_id,
+                    )
+                    continue
+
+            if not matched_entity_list:
                 parent_count = 1
+
                 if parent_node_id:
-                    valid_parent_ids = [pid for pid in parent_node_id if pid and pid != "node_root"]
+                    valid_parent_ids = [
+                        pid for pid in parent_node_id
+                        if pid and pid != "node_root"
+                    ]
                     if valid_parent_ids:
                         parent_count = max(
                             node_instance_count_map.get(pid, 1)
                             for pid in valid_parent_ids
                         )
-                    # if node_name in ["Weaps"]:
-                    #     print(node_name,  node_instance_count_map, parent_count, parent_node_id)
-                matched_entity_list = [{} for _ in range(parent_count)]
 
-            node_instance_count_map[node_id] = len(matched_entity_list)
-            logger.info(f"节点{node_id}({node_name})匹配到{len(matched_entity_list)}个List元素")
+                matched_entity_list = [
+                    {} for _ in range(parent_count)
+                ]
+
+            node_instance_count_map[node_id] = len(
+                matched_entity_list
+            )
+
+            logger.info(
+                f"节点{node_id}({node_name})匹配到"
+                f"{len(matched_entity_list)}个List元素"
+            )
 
             for idx, entity_data in enumerate(matched_entity_list):
                 instance_node_id = f"node_{node_id}_{idx}"
 
                 if parent_node_id:
                     instance_parent_id = [
-                        f"{parent_id}_{idx}" if parent_id != "node_root" else "node_root"
+                        (
+                            f"{parent_id}_{idx}"
+                            if parent_id != "node_root"
+                            else "node_root"
+                        )
                         for parent_id in parent_node_id
                         if parent_id
                     ]
                 else:
                     instance_parent_id = []
 
-                # 1. 生成带锚点属性的XML分块
-                # 【新增】传递上层JSON键信息到XML分块
-                # matched_entity_list为空时会使用{}作为占位，因此这里不能直接取第一个key
                 if entity_data:
-                    entity_data_key = next(iter(entity_data), None)
-                    entity_value = entity_data.get(entity_data_key, {})
+                    entity_data_key = next(
+                        iter(entity_data), None
+                    )
+                    entity_value = entity_data.get(
+                        entity_data_key, {}
+                    )
 
                     if isinstance(entity_value, dict):
-                        parent_json_key = entity_value.get("_parent_json_key", "unknown")
+                        parent_json_key = entity_value.get(
+                            "_parent_json_key",
+                            "unknown",
+                        )
                         full_path_str = entity_value.get(
                             "_full_path_str",
-                            fragment.get("node_name", "unknown")
+                            fragment.get(
+                                "node_name", "unknown"
+                            ),
                         )
                     else:
                         parent_json_key = "unknown"
-                        full_path_str = fragment.get("node_name", "unknown")
+                        full_path_str = fragment.get(
+                            "node_name", "unknown"
+                        )
                 else:
-                    # Cov、Cov_Ill等没有匹配数据的节点使用占位信息
+                    entity_data_key = None
+                    entity_value = {}
                     parent_json_key = "unknown"
-                    full_path_str = fragment.get("node_name", "unknown")
+                    full_path_str = fragment.get(
+                        "node_name", "unknown"
+                    )
 
-                ## 生成XML分块
+                # 不修改原始 fragment。
                 xml_fragment = fragment
 
-                if str(fragment.get("node_name", "")).lower() == "item_template" and entity_data:
-                    matched_key = next(iter(entity_data))
-                    if isinstance(matched_key, str) and re.fullmatch(
-                        r"Item_[0-9]+", matched_key, re.IGNORECASE
-                    ):
-                        xml_fragment = {**fragment, "node_name": matched_key}
+                # 原有逻辑：Item_TEMPLATE 是独立 Node，
+                # 用匹配到的 Item_n 修改 XML 分块根标签。
+                if is_item_template_node and entity_data:
+                    matched_key = next(
+                        (
+                            key
+                            for key in entity_data
+                            if isinstance(key, str)
+                            and re.fullmatch(
+                                r"Item_[0-9]+",
+                                key,
+                                re.IGNORECASE,
+                            )
+                        ),
+                        None,
+                    )
 
-                xml_chunk = self.serialize_fragment_as_xml_chunk(
-                    xml_fragment,
-                    instance_node_id,
-                    instance_parent_id,
-                    node_type,
-                    parent_json_key,
-                    full_path_str,
+                    if matched_key:
+                        xml_fragment = {
+                            **fragment,
+                            "node_name": matched_key,
+                        }
+
+                # 优先读取当前 JSON 内容里的 Item_n 键。
+                # 例如：
+                # {"下级标识": {"Item_0": "...", "Item_1": "..."}}
+                item_keys = []
+
+                if isinstance(entity_value, dict):
+                    item_keys = [
+                        key
+                        for key in entity_value
+                        if isinstance(key, str)
+                        and re.fullmatch(
+                            r"Item_[0-9]+",
+                            key,
+                            re.IGNORECASE,
+                        )
+                    ]
+
+                # 兼容当前分块本身就是 {"Item_n": ...} 的情况。
+                # 如果 Item_n 已用于根节点改名，就不能再用于内部字段。
+                if (
+                    not item_keys
+                    and str(fragment.get("node_name", ""))
+                    .strip().lower() != "item_template"
+                    and isinstance(entity_data_key, str)
+                    and re.fullmatch(
+                        r"Item_[0-9]+",
+                        entity_data_key,
+                        re.IGNORECASE,
+                    )
+                ):
+                    item_keys = [entity_data_key]
+
+
+                new_attributes = []
+
+                for attr in (xml_fragment.get("attributes") or []):
+                    if (
+                        isinstance(attr, dict)
+                        and str(attr.get("name", ""))
+                        .strip().lower() == "item_template"
+                    ):
+                        # 按 JSON 原键展开模板字段，保留字段的其他属性。
+                        new_attributes.extend(
+                            {**attr, "name": key}
+                            for key in item_keys
+                        )
+                    else:
+                        new_attributes.append(attr)
+
+                xml_fragment = {
+                    **xml_fragment,
+                    "attributes": new_attributes,
+                }
+
+                xml_chunk = (
+                    self.serialize_fragment_as_xml_chunk(
+                        xml_fragment,
+                        instance_node_id,
+                        instance_parent_id,
+                        node_type,
+                        parent_json_key,
+                        full_path_str,
+                    )
                 )
-    
-                # 2. 生成JSON分块（绑定锚点与父子关系+填充当前List元素数据）
+
                 json_chunk = self.generate_json_chunk(
                     fragment=fragment,
                     node_id=instance_node_id,
@@ -1961,23 +2079,45 @@ class ChunkService:
 
                 xml_chunks[instance_node_id] = xml_chunk
                 json_chunks[instance_node_id] = json_chunk
-                
-                # 3. 构建分块映射表条目
+
                 chunk_mapping[instance_node_id] = {
                     "node_id": instance_node_id,
-                    "original_node_id": node_id,  # 记录原始节点ID
-                    "list_index": idx,  # 记录List元素索引
+                    "original_node_id": node_id,
+                    "list_index": idx,
                     "parent_node_id": instance_parent_id,
                     "node_type": node_type,
                     "node_name": node_name,
-                    "json_node_name": full_path_str.split("->")[-1].strip(),
-                    "parent_json_key": parent_json_key,  # 【新增】记录原始JSON的上层键
-                    "full_json_path": full_path_str,     # 【新增】记录完整的JSON路径
-                    "children_node_ids": [f"node_{child['child_id']}_{idx}" for child in fragment.get("children", [])]
+                    "json_node_name": (
+                        full_path_str
+                        .split("->")[-1]
+                        .strip()
+                    ),
+                    "parent_json_key": parent_json_key,
+                    "full_json_path": full_path_str,
+                    "children_node_ids": [
+                        f"node_{child['child_id']}_{idx}"
+                        for child in fragment.get(
+                            "children", []
+                        )
+                    ],
                 }
-                                
+
+        # 清理被跳过的 Item_TEMPLATE 所产生的无效子节点引用。
+        existing_chunk_ids = set(xml_chunks.keys())
+
+        for mapping in chunk_mapping.values():
+            mapping["children_node_ids"] = [
+                child_id
+                for child_id in mapping.get(
+                    "children_node_ids",
+                    [],
+                )
+                if child_id in existing_chunk_ids
+            ]
+
         return xml_chunks, json_chunks, chunk_mapping
-    
+
+
 
     def generate_json_chunk(
         self,
@@ -3287,7 +3427,6 @@ class XMLAssemblyService:
             )
         )
 
-
 class OutputService:
     """
     负责生成流程最终输出的持久化。
@@ -3408,6 +3547,170 @@ class OutputService:
         )
 
         return str(self.ex_info_file)
+
+
+
+class MilitaryScenarioProcessor:
+    def __init__(
+        self,
+        llm_api_key: str,
+        llm_base_url: str,
+        model_name: str,
+        prompt_path: Path,
+    ):
+        self.api_key = llm_api_key
+        self.base_url = llm_base_url
+        self.model_name = model_name
+        self.max_completion_length = 32000
+        self.client = OpenAI(
+            api_key=llm_api_key,
+            base_url=llm_base_url,
+        )
+
+        self.prompt_template = Path(prompt_path).read_text(
+            encoding="utf-8"
+        )
+
+
+    def extract_entities_with_llm(self, scenario_text):
+        """
+        使用LLM从想定文本中提取实体和关系（核心步骤）
+        :param scenario_text: 作战想定文本
+        :return: 结构化的实体和关系字典
+        """
+        prompt_ = self.prompt_template.format(
+            scenario_text=scenario_text
+        )
+
+        try:
+            start_time = time.time()
+            # 非流式调用
+            # response = self.client.chat.completions.create(
+            #     model="Qwen/Qwen3-VL-32B-Instruct",
+            #     # "gpt-4" is available, too. Check the available models in https://platform.openai.com/docs/models/
+            #     messages=[{"role":"system", "content":"你是一名军事领域专家。"}, {"role":"user", "content": prompt_}],
+            #     temperature=0.05,  # 低温度以保证输出稳定性
+            #     max_tokens=self.max_completion_length,
+            #     top_p=0.1,
+            #     frequency_penalty=0.1,
+            #     presence_penalty=0.1,
+            #     timeout=100000,
+            # )
+
+            # llm_output = response.choices[0].message.content.strip()
+            
+            # 实时流式输出
+            # 流式输出核心：添加 stream=True，遍历响应块实时输出
+            response = self.client.chat.completions.create(
+                model= self.model_name, #"MiniMax/MiniMax-M2.7",
+                # "gpt-4" is available, too. Check the available models in https://platform.openai.com/docs/models/
+                messages=[{"role":"system", "content":"你是一名军事领域专家。"}, {"role":"user", "content": prompt_}],
+                temperature=0.05,  # 低温度以保证输出稳定性
+                max_tokens=self.max_completion_length,
+                top_p=0.1,
+                frequency_penalty=0.1,
+                presence_penalty=0.1,
+                timeout=10000,
+                stream=True,  # 开启流式输出
+            )
+
+            #流式输出处理：逐块接收响应，实时打印，最终拼接完整结果
+            llm_output = ""
+            #遍历流式响应的每个数据块
+            for chunk in response:
+                # 提取当前块的文本内容（delta是流式增量数据）
+                if chunk.choices and chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    llm_output += content  # 拼接完整结果
+                    # print(content, end="", flush=True)  # 实时逐字输出（不换行、强制刷新缓冲区）
+
+            # 最后去除首尾空白字符（和原代码逻辑一致）
+            llm_output = llm_output.strip()
+           
+            structured_data = self.parse_json_from_llm_output(llm_output)
+            end_time = time.time()
+            total_time = end_time - start_time
+
+            return structured_data
+        
+        except Exception:
+            logger.exception("实体抽取失败")
+            raise
+
+
+    # --- 辅助函数 ---
+    def parse_json_from_llm_output(self, llm_output):
+        """
+        从LLM的输出文本中解析出JSON内容。
+        这是一个复杂且需要鲁棒性处理的过程，实际实现可能需要使用正则表达式或尝试多种解析方式。
+        此处为简化示例，假设LLM能返回纯净的JSON。
+        """
+        # 示例：尝试提取可能被标记的JSON代码块
+        json_match = re.search(r'```json\n(.*?)\n```', llm_output, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+        else:
+            json_str = llm_output # 假设整个输出就是JSON
+
+        # 这里应使用json.loads解析json_str，示例直接返回一个模拟字典
+        # 实际使用时请替换为真正的解析逻辑
+        return json_str
+    
+
+    async def extract_to_json_file(
+            self,
+            scenario_path: Path,
+            output_path: Path,
+        ) -> Path:
+            """读取想定文本，抽取实体，并保存为下游使用的 JSON。"""
+            scenario_path = Path(scenario_path)
+            output_path = Path(output_path)
+
+            scenario_text = scenario_path.read_text(
+                encoding="utf-8-sig"
+            )
+
+            if not scenario_text.strip():
+                raise ValueError(
+                    f"想定文本为空：{scenario_path}"
+                )
+
+            # 现有抽取方法使用同步 OpenAI 客户端，
+            # 放入线程执行，避免阻塞异步主流程。
+            result = await asyncio.to_thread(
+                self.extract_entities_with_llm,
+                scenario_text,
+            )
+
+            # 兼容现有实现；后续可统一为直接返回 dict。
+            if isinstance(result, str):
+                result = json.loads(result)
+
+            if not isinstance(result, dict) or not result:
+                raise ValueError(
+                    "实体抽取结果必须是非空 JSON 对象"
+                )
+
+            output_path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            output_path.write_text(
+                json.dumps(
+                    result,
+                    ensure_ascii=False,
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+
+            logger.info(
+                "实体抽取完成，JSON 已保存：%s",
+                output_path,
+            )
+
+            return output_path
 
 
 
@@ -4103,7 +4406,79 @@ class TDVAXMLGenerator:
             f"平台 {self.platform_name} 尚未实现实体数据映射"
         )
 
+    def cleanup_320platform_item_templates(
+        self,
+        final_xml: str,
+    ) -> str:
+        """删除 320 平台最终 XML 中空的 Item_TEMPLATE 节点。"""
+        xml_bytes = (
+            final_xml.encode("utf-8")
+            if isinstance(final_xml, str)
+            else final_xml
+        )
+        root = ET.fromstring(xml_bytes)
 
+        removed_count = 0
+
+        for item in root.xpath(
+            '//*[local-name()="Item_TEMPLATE"]'
+        ):
+            # 仅删除空的 Tsstring 模板节点。
+            # 有文本内容的 Item_TEMPLATE（例如 UUID）会保留。
+            if (
+                item.get("Type") == "Tsstring"
+                and len(item) == 0
+                and not (item.text or "").strip()
+            ):
+                parent = item.getparent()
+                if parent is not None:
+                    parent.remove(item)
+                    removed_count += 1
+
+        # 更新没有残留模板节点的 TsList 的 Count。
+        for list_node in root.xpath(
+            '//*[@Type="TsList"]'
+        ):
+            has_template = any(
+                isinstance(child.tag, str)
+                and ET.QName(child).localname == "Item_TEMPLATE"
+                for child in list_node
+            )
+
+            if not has_template:
+                item_count = sum(
+                    1
+                    for child in list_node
+                    if (
+                        isinstance(child.tag, str)
+                        and re.fullmatch(
+                            r"Item_[0-9]+",
+                            ET.QName(child).localname,
+                            re.IGNORECASE,
+                        )
+                    )
+                )
+                list_node.set("Count", str(item_count))
+
+        logger.info(
+            "320 平台空 Item_TEMPLATE 删除数量：%d",
+            removed_count,
+        )
+
+        # 清除空列表内部的缩进空白，使其输出为自闭合标签。
+        for list_node in root.xpath('//*[@Type="TsList"]'):
+            if (
+                len(list_node) == 0
+                and not (list_node.text or "").strip()
+            ):
+                list_node.text = None
+
+        return ET.tostring(
+            root,
+            encoding="utf-8",
+            xml_declaration=True,
+            pretty_print=True,
+        ).decode("utf-8")  
 
 
     async def run(
@@ -4201,6 +4576,13 @@ class TDVAXMLGenerator:
                 )
             )
 
+            if self.platform_name == "320":
+                final_xml = (
+                    self.cleanup_320platform_item_templates(
+                        final_xml
+                    )
+                )
+
             # 6. 保存最终 XML
             final_xml_path = (
                 self.output_service
@@ -4284,37 +4666,57 @@ async def main() -> None:
     # LLM 配置
     openai_api_key = os.getenv(
         "OPENAI_API_KEY",
-        "sk-wocixetrhbgthoepmdjdycdadrcyudtepyujtqwcirkxmzvh",
+        "sk-4070f3c735854ed89d23ffda6d9ad870",
     )
 
     openai_base_url = os.getenv(
         "OPENAI_BASE_URL",
-        "https://api.siliconflow.cn/v1",
+        "https://maas.qianwenaiapi.com/compatible-mode/v1",
     )
 
-    target_platform = os.getenv("TARGET_PLATFORM", "320")
-
-    # 输入文件
-    input_json_path = Path(
-        os.getenv(
-            "TDVA_INPUT_JSON",
-            r"D:\非shemi工作内容\陈xz_论文相关\Scenario_Generation_TDVA\example\scenario_text_llm_extract.json",
-        )
+    model_name = os.getenv(
+        "LLM_MODEL",
+        "MiniMax/MiniMax-M2.7"
     )
-
-    if not input_json_path.is_file():
-        raise FileNotFoundError(
-            f"输入 JSON 文件不存在: {input_json_path}"
-        )
-
     if not openai_api_key:
         raise ValueError(
             "未设置 OPENAI_API_KEY"
         )
 
+    target_platform = os.getenv("TARGET_PLATFORM", "320")
+
+    project_dir = Path(__file__).resolve().parent
+
+    scenario_path = (
+        project_dir / "example" / "scenario_text.txt"
+    )
+    entities_json_path = (
+        project_dir
+        / "example"
+        / "scenario_text_llm_extract.json"
+    )
+    prompt_path = (
+        project_dir
+        / "prompt"
+        / "entities_extract_prompt_minmax.txt"
+    )
+
+    processor = MilitaryScenarioProcessor(
+        llm_api_key=openai_api_key,
+        llm_base_url=openai_base_url,
+        model_name=model_name,
+        prompt_path=prompt_path,
+    )
+
+    entities_json_path = await processor.extract_to_json_file(
+        scenario_path=scenario_path,
+        output_path=entities_json_path,
+    )
+
+
     # 加载输入 JSON
     json_data = json.loads(
-        input_json_path.read_text(
+        entities_json_path.read_text(
             encoding="utf-8"
         )
     )
@@ -4332,10 +4734,7 @@ async def main() -> None:
         ),
         openai_api_key=openai_api_key,
         openai_base_url=openai_base_url,
-        llm_model=os.getenv(
-            "LLM_MODEL",
-            "deepseek-ai/DeepSeek-V4-Flash",
-        ),
+        llm_model=model_name,
         max_workers=int(
             os.getenv(
                 "MAX_WORKERS",
@@ -4386,14 +4785,14 @@ async def main() -> None:
             json_data=json_data
         )
 
-        print(
-            json.dumps(
-                result,
-                ensure_ascii=False,
-                indent=2,
-                default=str,
-            )
-        )
+        # print(
+        #     json.dumps(
+        #         result,
+        #         ensure_ascii=False,
+        #         indent=2,
+        #         default=str,
+        #     )
+        # )
 
     finally:
         # 如果 run() 内部没有关闭资源，则执行关闭
