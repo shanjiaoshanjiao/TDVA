@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
 from threading import Lock
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
-
+from collections import defaultdict
 
 import logging 
 from pathlib import Path
@@ -3409,6 +3409,405 @@ class OutputService:
 
         return str(self.ex_info_file)
 
+
+
+class ScenarioXdHierarchyProcessor:
+    """仅用于 scenario_xd 平台：按 Item 顺序生成 UUID 和层级关系。"""
+
+    TOPIC_LIST_PATH = (
+        "ScenarioData",
+        "DataList",
+        "主题列表",
+    )
+
+    def process(self, json_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        原地更新新平台 JSON。
+
+        规则：
+        1. 编成后的实体，直到编组出现，属于该编成。
+        2. 编组后的实体，直到下一编成出现，属于该编组。
+        3. 编组不是编成的下级；编成/编组的下级标识只放实体 UUID。
+        4. 所有处理到的编成、编组、实体使用 UUID4。
+        """
+        topics = self._get_topics(json_data)
+        records = self._assign_ids(topics)
+
+        self._reset_hierarchy(records)
+        self._build_relationships(records)
+        self._set_top_nodes(records)
+        self._update_child_counts(records)
+
+        errors = self.validate(json_data)
+        if errors:
+            raise ValueError(
+                "scenario_xd 层级数据校验失败：\n"
+                + "\n".join(errors)
+            )
+
+        return json_data
+
+    def _get_topics(
+        self,
+        json_data: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        current: Any = json_data
+
+        for key in self.TOPIC_LIST_PATH:
+            if not isinstance(current, dict):
+                return []
+            current = current.get(key)
+
+        if not isinstance(current, dict):
+            return []
+
+        # 只读取 Item_n，并按数字顺序排列；
+        # 不能依赖 JSON 对象的插入顺序。
+        items = []
+
+        for key, topic in current.items():
+            match = re.fullmatch(r"Item_(\d+)", str(key))
+
+            if match and isinstance(topic, dict):
+                items.append((int(match.group(1)), topic))
+
+        items.sort(key=lambda item: item[0])
+
+        return [topic for _, topic in items]
+
+    @staticmethod
+    def _is_uuid4(value: Any) -> bool:
+        if not isinstance(value, str):
+            return False
+
+        try:
+            parsed = UUID(value)
+            return parsed.version == 4 and str(parsed) == value
+        except (ValueError, AttributeError, TypeError):
+            return False
+
+    @staticmethod
+    def _new_uuid(used_ids: set[str]) -> str:
+        while True:
+            object_id = str(uuid4())
+
+            if object_id not in used_ids:
+                return object_id
+
+    def _assign_ids(
+        self,
+        topics: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """
+        保留已有且不重复的 UUID4，其他 ID 一律换成随机 UUID4。
+
+        这样重复调用 process() 不会无故重新生成全部 ID；
+        示例中的 formation-...、group-...、unit-... 会被替换。
+        """
+        used_ids: set[str] = set()
+        records: list[dict[str, Any]] = []
+
+        for topic in topics:
+            topic_data = topic.get("主题数据")
+
+            if not isinstance(topic_data, dict):
+                continue
+
+            topic_type = self._get_topic_type(topic, topic_data)
+
+            # 其他类型主题不参与这套编成/编组关系处理。
+            if topic_type == "unknown":
+                continue
+
+            existing_id = topic_data.get("唯一标识")
+
+            if (
+                self._is_uuid4(existing_id)
+                and existing_id not in used_ids
+            ):
+                object_id = existing_id
+            else:
+                object_id = self._new_uuid(used_ids)
+
+            used_ids.add(object_id)
+            topic_data["唯一标识"] = object_id
+
+            records.append({
+                "topic": topic,
+                "topic_data": topic_data,
+                "type": topic_type,
+                "name": topic_data.get("名称"),
+                "side": self._get_side(topic_data),
+                "id": object_id,
+            })
+
+        return records
+
+    def _get_topic_type(
+        self,
+        topic: dict[str, Any],
+        topic_data: dict[str, Any],
+    ) -> str:
+        # 实体优先按主题名称判断，避免实体名称中含有“编组”而误判。
+        if topic.get("主题名称") == "实体":
+            return "entity"
+
+        if topic.get("主题名称") in {"编成", "编制"}:
+            return "formation"
+
+        if topic.get("主题名称") == "编组":
+            return "group"
+
+        # 兼容目前编成、编组没有“主题名称”的 JSON。
+        name = topic_data.get("名称")
+
+        if isinstance(name, str):
+            if "编成" in name or "编制" in name:
+                return "formation"
+
+            if "编组" in name:
+                return "group"
+
+        return "unknown"
+
+    @staticmethod
+    def _get_side(topic_data: dict[str, Any]) -> str | None:
+        return (
+            topic_data.get("属方标识")
+            or topic_data.get("标识")
+        )
+
+    @staticmethod
+    def _reset_hierarchy(
+        records: list[dict[str, Any]],
+    ) -> None:
+        for record in records:
+            data = record["topic_data"]
+
+            data["上级标识"] = None
+            data["顶端节点"] = {}
+            data["下级标识"] = {}
+            data["下级数量"] = 0
+
+    def _build_relationships(
+        self,
+        records: list[dict[str, Any]],
+    ) -> None:
+        """
+        使用顺序状态机，而不是按属方或所属组全局匹配。
+
+        遇编成：切换到编成区段。
+        遇编组：切换到编组区段。
+        遇实体：归入当前区段的编成或编组。
+        """
+        current_formation: dict[str, Any] | None = None
+        current_parent: dict[str, Any] | None = None
+
+        for record in records:
+            topic_type = record["type"]
+
+            if topic_type == "formation":
+                # 新编成开始一个新区段；之前的编组不再生效。
+                current_formation = record
+                current_parent = record
+                continue
+
+            if topic_type == "group":
+                if current_formation is None:
+                    raise ValueError(
+                        f"编组 {record['name']!r} 前没有编成，"
+                        "无法按 Item 顺序确定所属区段"
+                    )
+
+                if (
+                    record["side"]
+                    and current_formation["side"]
+                    and record["side"] != current_formation["side"]
+                ):
+                    raise ValueError(
+                        f"编组 {record['name']!r} 的推演方 "
+                        f"{record['side']!r} 与当前编成的推演方 "
+                        f"{current_formation['side']!r} 不一致"
+                    )
+
+                # 注意：不调用 _link(current_formation, record)。
+                # 根据你的规则，编成下级只包含编组之前的实体。
+                current_parent = record
+                continue
+
+            if topic_type != "entity":
+                continue
+
+            if current_parent is None:
+                raise ValueError(
+                    f"实体 {record['name']!r} 前没有编成或编组，"
+                    "无法按 Item 顺序确定上级"
+                )
+
+            if (
+                record["side"]
+                and current_parent["side"]
+                and record["side"] != current_parent["side"]
+            ):
+                raise ValueError(
+                    f"实体 {record['name']!r} 的推演方 "
+                    f"{record['side']!r} 与当前上级的推演方 "
+                    f"{current_parent['side']!r} 不一致"
+                )
+
+            self._link(
+                parent=current_parent,
+                child=record,
+            )
+
+    @staticmethod
+    def _link(
+        parent: dict[str, Any],
+        child: dict[str, Any],
+    ) -> None:
+        child["topic_data"]["上级标识"] = parent["id"]
+
+        children = parent["topic_data"]["下级标识"]
+        children[f"Item_{len(children)}"] = child["id"]
+
+    @staticmethod
+    def _set_top_nodes(
+        records: list[dict[str, Any]],
+    ) -> None:
+        # 保持前面约定：编成、编组的顶端节点为自身 UUID。
+        for record in records:
+            if record["type"] in {"formation", "group"}:
+                record["topic_data"]["顶端节点"] = {
+                    "Item_0": record["id"]
+                }
+            else:
+                record["topic_data"]["顶端节点"] = {}
+
+    @staticmethod
+    def _update_child_counts(
+        records: list[dict[str, Any]],
+    ) -> None:
+        for record in records:
+            children = record["topic_data"]["下级标识"]
+            record["topic_data"]["下级数量"] = len(children)
+
+    def validate(
+        self,
+        json_data: dict[str, Any],
+    ) -> list[str]:
+        """检查 UUID、父子引用、顶端节点和数量。"""
+        topics = self._get_topics(json_data)
+        errors: list[str] = []
+
+        records: list[dict[str, Any]] = []
+        by_id: dict[str, dict[str, Any]] = {}
+
+        for topic in topics:
+            data = topic.get("主题数据")
+
+            if not isinstance(data, dict):
+                continue
+
+            topic_type = self._get_topic_type(topic, data)
+
+            if topic_type == "unknown":
+                continue
+
+            object_id = data.get("唯一标识")
+
+            if not self._is_uuid4(object_id):
+                errors.append(
+                    f"{data.get('名称')!r} 的唯一标识不是 UUID4："
+                    f"{object_id!r}"
+                )
+                continue
+
+            if object_id in by_id:
+                errors.append(f"重复的唯一标识：{object_id}")
+                continue
+
+            record = {
+                "id": object_id,
+                "type": topic_type,
+                "data": data,
+            }
+
+            records.append(record)
+            by_id[object_id] = record
+
+        for record in records:
+            object_id = record["id"]
+            data = record["data"]
+            name = data.get("名称")
+            parent_id = data.get("上级标识")
+            children = data.get("下级标识")
+            top_nodes = data.get("顶端节点")
+
+            if not isinstance(children, dict):
+                errors.append(f"{name!r} 的下级标识不是对象")
+                continue
+
+            if not isinstance(top_nodes, dict):
+                errors.append(f"{name!r} 的顶端节点不是对象")
+                continue
+
+            expected_keys = [
+                f"Item_{i}" for i in range(len(children))
+            ]
+
+            if list(children.keys()) != expected_keys:
+                errors.append(
+                    f"{name!r} 的下级标识 Item_n 编号不连续"
+                )
+
+            if data.get("下级数量") != len(children):
+                errors.append(
+                    f"{name!r} 的下级数量与下级标识数量不一致"
+                )
+
+            if parent_id is not None:
+                parent = by_id.get(parent_id)
+
+                if parent is None:
+                    errors.append(
+                        f"{name!r} 的上级标识不存在：{parent_id}"
+                    )
+                elif object_id not in (
+                    parent["data"].get("下级标识") or {}
+                ).values():
+                    errors.append(
+                        f"{name!r} 的上级未将其列入下级标识"
+                    )
+
+            for child_id in children.values():
+                child = by_id.get(child_id)
+
+                if child is None:
+                    errors.append(
+                        f"{name!r} 的下级标识不存在：{child_id}"
+                    )
+                elif child["type"] != "entity":
+                    errors.append(
+                        f"{name!r} 的下级不是实体：{child_id}"
+                    )
+                elif child["data"].get("上级标识") != object_id:
+                    errors.append(
+                        f"{name!r} 与下级 {child_id} 的父子引用不一致"
+                    )
+
+            if record["type"] in {"formation", "group"}:
+                if top_nodes != {"Item_0": object_id}:
+                    errors.append(
+                        f"{name!r} 的顶端节点不是自身 UUID"
+                    )
+            elif top_nodes:
+                errors.append(
+                    f"实体 {name!r} 的顶端节点应为空对象"
+                )
+
+        return errors
+
+
 class TDVAXMLGenerator:
     """
     编排单个 XML 文档的 TDVA 生成流程。
@@ -3507,6 +3906,7 @@ class TDVAXMLGenerator:
         """检查当前平台是否支持。"""
         supported_platforms = {
             "mozi",
+            "320"
         }
 
         if self.platform_name not in supported_platforms:
@@ -3690,7 +4090,7 @@ class TDVAXMLGenerator:
         json_data: Dict,
         fragments: List[Dict],
     ) -> Dict:
-        if self.platform_name == "mozi":
+        if self.platform_name == "mozi" or self.platform_name == "320":
             return (
                 self.entity_mapping_service
                 .prepare_entity_data_map(
@@ -3868,7 +4268,7 @@ async def main() -> None:
     # Neo4j 配置
     neo4j_uri = os.getenv(
         "NEO4J_URI",
-        "bolt://workspace.featurize.cn:13533",
+        "bolt://workspace.featurize.cn:22478",
     )
 
     neo4j_user = os.getenv(
@@ -3891,6 +4291,8 @@ async def main() -> None:
         "OPENAI_BASE_URL",
         "https://api.siliconflow.cn/v1",
     )
+
+    target_platform = os.getenv("TARGET_PLATFORM", "320")
 
     # 输入文件
     input_json_path = Path(
@@ -3916,6 +4318,10 @@ async def main() -> None:
             encoding="utf-8"
         )
     )
+
+    if target_platform == "320":
+        json_data = ScenarioXdHierarchyProcessor().process(json_data)
+
 
     # 创建生成器
     generator = TDVAXMLGenerator(
@@ -3972,6 +4378,7 @@ async def main() -> None:
             "EX_INFO_PATH",
             "./output/info.json",
         ),
+        platform_name=target_platform,
     )
 
     try:
